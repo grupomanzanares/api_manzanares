@@ -1,0 +1,93 @@
+Pasos  Creacion Api Rest en Nodejs
+
+Api Rest:  La Api RestFul es una interfaz que los sistemas de computacion utilizan para itercambiar informacion
+    de manera segura a traves de internet.
+    La mayoria de aplicaciones para empresas deben comunicarse con otras aplicaciones internas o de terceros para llevar a cabo varias tareas.
+    La api restful admiten intercambio de informacion porque siguen estandares de comunicacion de software seguros, confiables y eficientes
+
+    Una interfaz de porgrama de aplicacion (API) define las reglas que se deben seguir para comunicarse con otros sistemas de software
+
+    Se puede pensar en una pi web como una puerta de enlace entre los clientes y los recursos de la web.
+
+    Los clientes son usuarios que desean acceder a la informacion desde la web. El cliente puede ser una persona o un sistema de software que utiliza la api
+    Los recursos son la informacion que difrentes aplicaciones proporcionan a sus clientes. Los recursos pueden ser imagenes, videos, texto,
+    numeros o cualquier tipo de datos. la maquina encargada de entregar el recurso al cliente tambien recibe el nombre de servidor.
+
+
+REST 
+    La transferencia de estado representacional (REST) es una arquitectura de software que impone condiciones sobre como debe funcionar una Api.
+    Es posible utiizar una arqutectura basada en RES para admitir comunicaciones confiables y de alto rendimiento a escala
+
+    La api que siguen el estilo arquetectonico de REST se llama API REST.  Los servicios web que implementan una arquitectura de REST son llamados
+    servicios web RESTful
+
+Que contiene la solicitud cliente de la ApiRest
+
+    Metodos: Get post Put delete
+    Encabezados de http
+    datos
+    Parametros
+
+Verificar Versiones con las que vamos a trabajar
+    node   node -v   v20.11.1
+    npm    npm -v    10.2.4
+
+
+Paginas de referencia
+    https://nodejs.org/en
+    https://www.npmjs.com/
+
+Creacion de archivos:
+
+    Crear archivo  .gitignore  y colocar:
+                            node_modules/*
+                            .env
+
+    Crear archivo index.js
+    Crear archivo .env
+    Crear carpetas:  routes,views,controllers, models
+
+Tener presente trabajar con git 
+
+1.Crear    Proyecto  :              
+            npm init                Crea el package.json   opcion (npm init --y)
+            En el archivo package.json  
+                "start": "node ./index.js",
+                "server": "nodemon ./index.js"   
+            npm run start o npm start   inicia el index.js ???
+            Trabjar con import  modificar esto en el package.json    "type": "module",
+
+2. Dependencias de Produccion
+            Instalar framework :              npm i express	 --save       Crea el package-lock.json y la carpeta node_modules   4.19.2
+
+3. Dependencias de Desarrollo
+Dependencia Nodemon                 https://github.com/grupomanzanares/api_coffee.git	    dependencia de desarrollo que sirve para mantener levantado el servidor  3.1.3
+                                                              "server": "nodemon ./index.js"   en scripts   npm run server
+
+
+Crear archivo de configuracion :   Carpeta config   -- archivo db.js,  configurar variables de entorno conexion a Bd,  modificar index para conexion a bd  
+    npm i dotenv               //instalar para llamar las variables de entorno
+    npm i express-validator    // Para realizar validaciones
+    npm i bcrypt               // Para encriptar contraseñas
+    npm install mysql2         // Para trabajar con Mysql
+    npm install sequelize      // Para interactuar con la base de datos
+
+    npm i multer  // Para trabajar con imagenes
+
+
+    npm install jsonwebtoken 
+    JWT_SECRET = "clavesecreta"  parametrizar clave secreta en .env
+
+
+
+
+
+Envio de correos
+
+Correo
+Envio de correo: npm install nodemailer
+Revisar variables de entorno
+EMAIL_HOST='mail.invercerro.com'
+EMAIL_PORT=465
+EMAIL_USERNAME='informatica@invercerro.com'
+EMAIL_PASSWORD='WAGfybMz03*'
