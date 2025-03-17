@@ -84,6 +84,8 @@ Crear archivo de configuracion :   Carpeta config   -- archivo db.js,  configura
 
 Envio de correos
 
+npm install nodemailer
+
 Correo
 Envio de correo: npm install nodemailer
 Revisar variables de entorno
