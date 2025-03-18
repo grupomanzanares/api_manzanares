@@ -5,7 +5,6 @@ const validateCreateUser = [
     body('name').exists().notEmpty().isLength({min: 5, max: 100}),
     body('email').exists().notEmpty(),
     body('celphone').exists().notEmpty(),
-    body('rolId').exists().notEmpty(),
     body('password').exists().notEmpty().isLength({min: 10, max: 18}),
 
     (req, res, next) =>{
