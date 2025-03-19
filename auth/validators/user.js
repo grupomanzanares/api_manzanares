@@ -1,7 +1,6 @@
 import { body, check, validationResult } from "express-validator";
 
 const validateCreateUser = [
-    body('identificacion').exists().notEmpty(),
     body('name').exists().notEmpty().isLength({min: 5, max: 100}),
     body('email').exists().notEmpty(),
     body('celphone').exists().notEmpty(),
