@@ -1,7 +1,7 @@
 import { matchedData } from "express-validator";
 import User from "../models/User.js"
 import { handleHttpError } from '../../helpers/httperror.js'
-
+import { encrypt } from "../helpers/password.js"
 
 
 const getUsers = async (req, res)=>{
@@ -107,7 +107,7 @@ const updateUser = async(req, res) =>{
 
         }); 
     } catch (error) {
-        handleHttpError(res, 'No se pudo actualiza al usuario, intenta otra vez')
+        handleHttpError(res, 'No se pudo actualizar usuario, intenta otra vez')
         console.error(error)
     }
 }
