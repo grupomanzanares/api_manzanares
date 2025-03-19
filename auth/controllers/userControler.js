@@ -2,6 +2,7 @@ import { matchedData } from "express-validator";
 import User from "../models/User.js"
 import { handleHttpError } from '../../helpers/httperror.js'
 import { encrypt } from "../helpers/password.js"
+import { tokenSign } from "../../helpers/jwt.js"
 
 
 const getUsers = async (req, res)=>{
