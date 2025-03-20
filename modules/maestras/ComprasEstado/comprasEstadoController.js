@@ -1,10 +1,10 @@
 import { matchedData } from "express-validator";
 import { handleHttpError } from "../../../helpers/httperror.js";
-import compraEestado from "./comprasEstado.js";
+import comprasEstado from "./comprasEstado.js";
 
 
 
-const entity = "compraEestado"
+const entity = "comprasEstado"
 
 const getComprasEstados = async (req, res) =>{
     try {
@@ -21,7 +21,7 @@ const getComprasEstado = async(req, res) => {
     try {
         req = matchedData(req)
         const { id } = req
-        const data = await compraEestado.findOne({
+        const data = await comprasEstado.findOne({
             where: {
                 id: id,
                 state: true
@@ -46,7 +46,7 @@ const createComprasEstado= async (req, res) => {
 
     try {
         const body = matchedData(req)
-        const response = await compraEestado.create(body)
+        const response = await comprasEstado.create(body)
         res.send(response)
     } catch (error) {
         console.log(error)
@@ -62,7 +62,7 @@ const updateComprasEstado = async (req, res) => {
         const body = req.body
 
 
-        const response = await compraEestado.update(body, {
+        const response = await comprasEstado.update(body, {
             where: { id }
         })
 
@@ -72,7 +72,7 @@ const updateComprasEstado = async (req, res) => {
             })
         }
 
-        const updateRegistro = await compraEestado.findByPk(id);
+        const updateRegistro = await comprasEstado.findByPk(id);
 
         res.status(200).json({
             message:  ` ${entity} actualizado correctamente `  ,
@@ -88,7 +88,7 @@ const updateComprasEstado = async (req, res) => {
 const deleteComprasEstado = async(req, res) =>{
     try {
         const { id } = req.params
-        const response = await compraEestado.update({state: false}, {
+        const response = await comprasEstado.update({state: false}, {
             where: {id, state: true}
         })
 
