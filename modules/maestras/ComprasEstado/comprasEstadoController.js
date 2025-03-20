@@ -8,7 +8,7 @@ const entity = "comprasEstado"
 
 const getComprasEstados = async (req, res) =>{
     try {
-        const registros = await compraEestado.findAll({
+        const registros = await comprasEstado.findAll({
             where: {state: true}
         });
         res.json(registros)
