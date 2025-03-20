@@ -73,7 +73,7 @@ const compraReportada = db.define('compras_reportadas', {
     conciliado:{
         type: DataTypes.BOOLEAN, 
         allowNull: false,
-        defaultValue: true 
+        defaultValue: false 
     },
     user: {
         type: DataTypes.STRING(50),
