@@ -23,8 +23,12 @@ const compraReportada = db.define('compras_reportadas', {
         allowNull: false
     },
 
-    factura: {
-        type: DataTypes.STRING(20),
+    tipo: {
+        type: DataTypes.STRING(30),
+        allowNull: false
+    },
+    numero: {
+        type: DataTypes.STRING(15),
         allowNull: false
     },
 

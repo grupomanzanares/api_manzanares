@@ -5,18 +5,16 @@ const validateCreateCompraReportada = [
     body('emisor').exists().withMessage("La identificación es obligatorio")
         .notEmpty().isLength({min: 5, max: 15}),
     body('nombreEmisor').exists().notEmpty().isLength({min: 4, max: 30}),
-
-
     body('empresa').exists().withMessage("La empresa es obligatorio")
     .notEmpty().isLength({min: 5, max: 15}),
-    body('factura').exists().withMessage("La factura es obligatorio")
-    .notEmpty().isLength({min: 5, max: 15}),
+    body('tipo').exists().withMessage("El tipo de documento de compra es obligatorio")
+    .notEmpty().isLength({min: 1, max: 30}),
+    body('numero').exists().withMessage("La factura es obligatorio")
+    .notEmpty().isLength({min: 1, max: 15}),
     body('fecha')
     .exists().withMessage('La fecha es obligatoria'),
-
     body('cufe')
     .exists().withMessage('La fecha es obligatoria'),
-
     body('valor')
     .exists().withMessage('El valor es obligatorio')
     .isNumeric().withMessage('El valor debe ser un número válido')
