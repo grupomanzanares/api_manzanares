@@ -41,12 +41,12 @@ const compraReportada = db.define('compras_reportadas', {
 
     urlPdf: {
         type: DataTypes.STRING(150),
-        allowNull: false
+        allowNull: true
     },
 
     ccosto: {
         type: DataTypes.STRING(20),
-        allowNull: false
+        allowNull: true
     },
 
     valor: {
