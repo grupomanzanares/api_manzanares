@@ -11,7 +11,7 @@ const User = db.define('users', {
         primaryKey: true,
         autoIncrement: true
     }, 
-    identificacion: {
+    identification: {
         type: DataTypes.STRING, // Define el tipo de dato para identificacion si es requerido
         allowNull: true, // O 'false' si es obligatorio
         unique: true
