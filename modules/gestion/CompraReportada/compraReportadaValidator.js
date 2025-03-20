@@ -2,10 +2,27 @@ import { body, check, validationResult } from "express-validator";
 
 const validateCreateCompraReportada = [
     
-    body('nit').exists().withMessage("La identificación es obligatorio")
+    body('emisor').exists().withMessage("La identificación es obligatorio")
         .notEmpty().isLength({min: 5, max: 15}),
-    body("logo").optional(),
-    body('nombre').exists().notEmpty().isLength({min: 4, max: 30}),
+    body('nombreEmisor').exists().notEmpty().isLength({min: 4, max: 30}),
+
+
+    body('empresa').exists().withMessage("La empresa es obligatorio")
+    .notEmpty().isLength({min: 5, max: 15}),
+    body('factura').exists().withMessage("La factura es obligatorio")
+    .notEmpty().isLength({min: 5, max: 15}),
+    body('fecha')
+    .exists().withMessage('La fecha es obligatoria'),
+
+    body('cufe')
+    .exists().withMessage('La fecha es obligatoria'),
+
+    body('valor')
+    .exists().withMessage('El valor es obligatorio')
+    .isNumeric().withMessage('El valor debe ser un número válido')
+    .custom(value => value > 0).withMessage('El valor debe ser mayor a cero'),
+
+
     body('user').optional().isString().withMessage('El usuario debe ser una cadena de texto'),
     body('userMod').optional().isString().withMessage('El usuarioMod debe ser una cadena de texto'),
 
