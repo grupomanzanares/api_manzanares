@@ -8,7 +8,7 @@ import { tokenSign } from "../../helpers/jwt.js"
 const getUsers = async (req, res)=>{
     try {
         const users = await User.findAll({
-            where: { state: true }
+            where: { estado: true }
         });
         res.json(users);
     } catch (error) {
@@ -58,7 +58,7 @@ const deleteUser = async(req, res) =>{
 
         // Eliminamos el usuario
         const response = await User.update({state: false}, {
-            where: { id, state: true } // Con el id que estraemos eliminamos al usuario
+            where: { id, estado: true } // Con el id que estraemos eliminamos al usuario
         })
 
         if (response === 0) {

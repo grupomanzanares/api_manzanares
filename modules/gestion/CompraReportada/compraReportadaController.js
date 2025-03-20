@@ -9,7 +9,7 @@ const entity = "compraReportada"
 const getComprasReportadas = async (req, res) =>{
     try {
         const registros = await compraReportada.findAll({
-            where: {state: true}
+            where: {estado: true}
         });
         res.json(registros)
     }catch{
@@ -24,7 +24,7 @@ const getCompraReportada = async(req, res) => {
         const data = await compraReportada.findOne({
             where: {
                 id: id,
-                state: true
+                estado: true
             }
         })
         if (!data){
@@ -102,7 +102,7 @@ const deleteCompraReportada = async(req, res) =>{
     try {
         const { id } = req.params
         const response = await compraReportada.update({state: false}, {
-            where: {id, state: true}
+            where: {id, estado: true}
         })
 
         if(response === 0) {

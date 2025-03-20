@@ -9,7 +9,7 @@ const entity = "esdependenciatado"
 const getDependencias = async (req, res) =>{
     try {
         const registros = await dependencia.findAll({
-            where: {state: true}
+            where: {estado: true}
         });
         res.json(registros)
     }catch{
@@ -24,7 +24,7 @@ const getDependencia = async(req, res) => {
         const data = await dependencia.findOne({
             where: {
                 id: id,
-                state: true
+                estado: true
             }
         })
         if (!data){
@@ -89,7 +89,7 @@ const deleteDependencia = async(req, res) =>{
     try {
         const { id } = req.params
         const response = await dependencia.update({state: false}, {
-            where: {id, state: true}
+            where: {id, estado: true}
         })
 
         if(response === 0) {

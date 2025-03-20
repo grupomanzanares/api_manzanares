@@ -9,7 +9,7 @@ const entity = "empresa"
 const getEmpresas = async (req, res) =>{
     try {
         const registros = await empresa.findAll({
-            where: {state: true}
+            where: {estado: true}
         });
         res.json(registros)
     }catch{
@@ -24,7 +24,7 @@ const getEmpresa = async(req, res) => {
         const data = await empresa.findOne({
             where: {
                 id: id,
-                state: true
+                estado: true
             }
         })
         if (!data){
@@ -102,7 +102,7 @@ const deleteEmpresa = async(req, res) =>{
     try {
         const { id } = req.params
         const response = await empresa.update({state: false}, {
-            where: {id, state: true}
+            where: {id, estado: true}
         })
 
         if(response === 0) {
