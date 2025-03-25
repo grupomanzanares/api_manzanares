@@ -1,7 +1,8 @@
 import { matchedData } from "express-validator";
 import { handleHttpError } from "../../../helpers/httperror.js";
-import { compraReportada } from "../gestionRelations.js";
-
+import { compraReportada, comprasEstado, comprasTipo } from "../gestionRelations.js";
+import User from "../../../auth/models/User.js";
+ 
 
 
 const entity = "compraReportada"

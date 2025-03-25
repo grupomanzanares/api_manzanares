@@ -19,4 +19,4 @@ compraReportada.belongsTo(User, { foreignKey: "responsableId", as: "responsable"
 
 
 
-export { compraReportada};
+export { compraReportada, comprasTipo, comprasEstado};
