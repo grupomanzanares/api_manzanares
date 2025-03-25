@@ -20,7 +20,10 @@ const getComprasReportadas = async (req, res) => {
                     model: comprasEstado ,
                     attributes: ['id', 'nombre'], 
                 },
- 
+                {
+                    model: User, as: 'responsable',
+                    attributes: ["name"] 
+                },
             ]
         });
         res.json(registros)
