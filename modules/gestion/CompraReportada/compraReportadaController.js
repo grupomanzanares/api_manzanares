@@ -16,6 +16,10 @@ const getComprasReportadas = async (req, res) => {
                     model: comprasTipo ,
                     attributes: ['id', 'nombre'], 
                 },
+                {
+                    model: comprasEstado ,
+                    attributes: ['id', 'nombre'], 
+                },
  
             ]
         });
