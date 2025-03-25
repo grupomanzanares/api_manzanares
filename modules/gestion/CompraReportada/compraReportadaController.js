@@ -15,15 +15,6 @@ const getComprasReportadas = async (req, res) => {
                 {
                     model: comprasTipo ,
                     attributes: ['id', 'nombre'], // puedes ajustar los campos que necesites
-                },
-                {
-                    model: comprasEstado,
-                    attributes: ['id', 'nombre'], // igual aquí
-                },
-                {
-                    model: User,
-                    as: 'responsable',
-                    attributes: ['id', 'nombre', 'email'], // o los que quieras mostrar del usuario
                 }
             ]
         });
