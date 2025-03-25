@@ -14,12 +14,12 @@ const getComprasReportadas = async (req, res) => {
             include: [
                 {
                     model: comprasTipo ,
-                    attributes: ['id', 'nombre'], // puedes ajustar los campos que necesites
+                    attributes: ["nombre"]
                 },
                 ,
                 {
                     model: comprasEstado,
-                    attributes: ['id', 'nombre'], // igual aquí
+                    attributes: ["nombre"]
                 }
             ]
         });
