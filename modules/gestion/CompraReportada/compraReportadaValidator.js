@@ -4,7 +4,7 @@ const validateCreateCompraReportada = [
     
     body('emisor').exists().withMessage("El emisor  es obligatorio")
         .notEmpty().isLength({min: 5, max: 15}),
-    body('nombreEmisor').exists().notEmpty().isLength({min: 4, max: 30}),
+    body('nombreEmisor').exists().notEmpty().isLength({min: 4, max: 100}),
     body('empresa').exists().withMessage("La empresa es obligatorio")
     .notEmpty().isLength({min: 5, max: 15}),
     body('tipo').exists().withMessage("El tipo de documento de compra es obligatorio")
