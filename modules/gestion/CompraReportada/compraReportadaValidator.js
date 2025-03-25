@@ -2,7 +2,7 @@ import { body, check, validationResult } from "express-validator";
 
 const validateCreateCompraReportada = [
     
-    body('emisor').exists().withMessage("La identificación es obligatorio")
+    body('emisor').exists().withMessage("El emisor  es obligatorio")
         .notEmpty().isLength({min: 5, max: 15}),
     body('nombreEmisor').exists().notEmpty().isLength({min: 4, max: 30}),
     body('empresa').exists().withMessage("La empresa es obligatorio")
