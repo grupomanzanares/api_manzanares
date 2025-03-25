@@ -9,7 +9,22 @@ const entity = "compraReportada"
 const getComprasReportadas = async (req, res) => {
     try {
         const registros = await compraReportada.findAll({
-            where: { habilitado: true }
+            where: { habilitado: true },
+                include: [
+                    {
+                    model: comprasTipo,
+                    attributes: ['id', 'nombre'], // puedes ajustar los campos que necesites
+                    },
+                    {
+                    model: comprasEstado,
+                    attributes: ['id', 'nombre'], // igual aquí
+                    },
+                    {
+                    model: User,
+                    as: 'responsable',
+                    attributes: ['id', 'nombre', 'email'], // o los que quieras mostrar del usuario
+                    }
+                ]
         });
         res.json(registros)
     } catch {
