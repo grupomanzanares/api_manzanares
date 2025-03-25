@@ -1,6 +1,6 @@
 import { matchedData } from "express-validator";
 import { handleHttpError } from "../../../helpers/httperror.js";
-import { compraReportada, comprasEstado, comprasTipo, User } from "../gestionRelations.js";
+import { compraReportada, comprasEstado, comprasTipo, empresa, User } from "../gestionRelations.js";
  
  
 
@@ -24,6 +24,11 @@ const getComprasReportadas = async (req, res) => {
                     model: User, as: 'responsable',
                     attributes: ["name"] 
                 },
+                {
+                    model: empresa,
+                    as: 'empresaInfo',
+                    attributes: ['nombre'],
+                }
             ]
         });
         res.json(registros)
