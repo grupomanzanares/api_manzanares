@@ -15,6 +15,11 @@ const getComprasReportadas = async (req, res) => {
                 {
                     model: comprasTipo ,
                     attributes: ['id', 'nombre'], // puedes ajustar los campos que necesites
+                },
+                ,
+                {
+                    model: comprasEstado,
+                    attributes: ['id', 'nombre'], // igual aquí
                 }
             ]
         });
