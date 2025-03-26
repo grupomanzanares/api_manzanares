@@ -167,8 +167,12 @@ const bulkUpsertComprasReportadas = async (req, res) => {
             });
 
             if (existente) {
-                await existente.update(item);
-                resultados.actualizados.push({ emisor, numero });
+                if (existente.estadoId === 1) {
+                    await existente.update(item);
+                    resultados.actualizados.push({ emisor, numero });
+                } else {
+                    resultados.errores.push({ emisor, numero, error: 'No se puede actualizar porque estadoId no es 1' });
+                }
             } else {
                 await compraReportada.create(item);
                 resultados.creados.push({ emisor, numero });
