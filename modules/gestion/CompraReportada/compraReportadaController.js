@@ -89,20 +89,32 @@ const createCompraReportada = async (req, res) => {
 
 
 const updateCompraReportada = async (req, res) => {
+
+
+    console.log('Recibido en el servidor:');
+    console.log('Cuerpo de la solicitud:', req.body);
+    console.log('Archivos:', req.files);
+
     try {
         const { id } = req.params
 
-        const body = req.body
+        const body = matchedData(req)
+
+        // Si se subió un archivo PDF, agrégalo al body
+        if (req.file) {
+            body.urlPdf = `/uploads/${req.file.filename}`;
+        }
 
 
-        const response = await compraReportada.update(body, {
+        // Ejecuta la actualización
+        const [updatedCount] = await compraReportada.update(body, {
             where: { id }
-        })
+        });
 
-        if (response[0] === 0) {
+        if (updatedCount === 0) {
             return res.status(404).json({
-                message: ` ${entity} No encontrado o No se realizaron cambios `
-            })
+                message: `${entity} no encontrado o no se realizaron cambios`
+            });
         }
 
         const updateRegistro = await compraReportada.findByPk(id);
