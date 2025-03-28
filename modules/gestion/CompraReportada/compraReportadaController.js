@@ -98,7 +98,7 @@ const updateCompraReportada = async (req, res) => {
     try {
         const { id } = req.params
 
-        const body = matchedData(req)
+        const body = req.body
 
         // Si se subió un archivo PDF, agrégalo al body
         if (req.file) {
