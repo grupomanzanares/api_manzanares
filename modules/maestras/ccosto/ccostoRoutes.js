@@ -8,8 +8,14 @@ import { getCcostos, getCcosto, createCcosto , updateCcosto, deleteCcosto, getCc
 const router = express.Router();
 
 router.get('/', apiAuth, getCcostos)
-router.get('/:nit', apiAuth, validateGetCcostoxNit,  getCcostoxNit)
-router.get('/:id', apiAuth, validateGetCcosto,  getCcosto)
+
+router.get('/', apiAuth, (req, res) => {
+    const { id, nit } = req.query;
+    if (id) return getCcosto(req, res);
+    if (nit) return getCcostoxNit(req, res);
+  });
+  
+
 router.post('/create', apiAuth, validateCreateCcosto, createCcosto)
 router.put('/:id', apiAuth,validateGetCcosto,  updateCcosto)
 router.delete('/delete/:id',  apiAuth, deleteCcosto)
