@@ -40,6 +40,28 @@ const getCcosto = async(req, res) => {
     }
 }
 
+const getCcostoxNit = async(req, res) => {
+    try {
+        req = matchedData(req)
+        const { nit } = req
+        const data = await ccosto.findOne({
+            where: {
+                nit: nit,
+                estado: true
+            }
+        })
+        if (!data){
+            return res.status(404).json({
+                message:  `${entity} no encontrado(a) ó inactivo (a) ` 
+            })
+        }
+        res.status(200).json(data);
+        console.log(data)
+    } catch (error) {
+        handleHttpError(res, `Error al traer ${entity}  ` )
+        console.error(error)
+    }
+}
 
 
 const createCcosto = async (req, res) => {
@@ -122,6 +144,7 @@ const deleteCcosto = async(req, res) =>{
 
 export{
     getCcostos,
+    getCcostoxNit,
     getCcosto,
     createCcosto,
     deleteCcosto,
