@@ -46,9 +46,25 @@ const getCcostoxNit = async(req, res) => {
         const { nit } = req
         console.log("NIT recibido:", nit); // 👈 VERIFICACIÓN
 
+
+            // Paso 1: Buscar la empresa por nit
+        const empresaData = await empresa.findOne({
+            where: {
+            nit: nit,
+            estado: true
+            }
+        });
+    
+        if (!empresaData) {
+            return res.status(404).json({
+            message: `Empresa con NIT ${nit} no encontrada o inactiva`
+            });
+        }
+
+
         const data = await ccosto.findOne({
             where: {
-                nit: nit,
+                empresaId: empresaData.id,
                 estado: true
             }
         })
