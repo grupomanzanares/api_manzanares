@@ -13,6 +13,7 @@ import rolRoutes from './auth/routes/rolRoutes.js';
 /***  Rutas Maestros del sistema */
 import dependenciaRoutes from './modules/maestras/Dependencia/dependenciaRoutes.js';
 import empresaRoutes from './modules/maestras/Empresa/empresaRoutes.js';
+import ccostosRoutes from './modules/maestras/ccosto/ccostoRoutes.js';
 import comprasEstadoRoutes from './modules/maestras/ComprasEstado/comprasEstadoRoutes.js';
 import comprasTipoRoutes from './modules/maestras/ComprasTipo/comprasTipoRoutes.js';
 import compraReportadaRoutes from './modules/gestion/CompraReportada/compraReportadaRoutes.js';
@@ -52,6 +53,7 @@ app.use('/api_manzanares/roles', rolRoutes);
 /***  Rutas del sistema */
 app.use('/api_manzanares/dependencias', dependenciaRoutes);
 app.use('/api_manzanares/empresas', empresaRoutes);
+app.use('/api_manzanares/ccostos', ccostosRoutes);
 app.use('/api_manzanares/compras_estados', comprasEstadoRoutes);
 app.use('/api_manzanares/compras_tipos', comprasTipoRoutes);
 app.use('/api_manzanares/compras_reportadas', compraReportadaRoutes);
