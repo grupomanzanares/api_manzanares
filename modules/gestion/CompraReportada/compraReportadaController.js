@@ -233,6 +233,25 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                 continue;
             }
 
+
+            // Formatear el valor decimal correctamente
+            if (item.valor) {
+                // Eliminar todos los puntos de los separadores de miles y reemplazar la coma por punto si es necesario
+                item.valor = item.valor.toString().replace(/\./g, '').replace(',', '.');
+                            
+                // Convertir a número para asegurarse de que es un valor numérico válido
+                item.valor = parseFloat(item.valor);
+                            
+                // Verificar si es un número válido
+                if (isNaN(item.valor)) {
+                                resultados.errores.push({ 
+                                    item, 
+                                    error: `Valor inválido: "${item.valor}" no es un número decimal válido` 
+                                });
+                                continue;
+                }
+            }
+
             // Buscar existente
             const existente = await compraReportada.findOne({
                 where: { emisor, numero }
