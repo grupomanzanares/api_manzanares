@@ -1,6 +1,6 @@
 import { matchedData } from "express-validator";
 import { handleHttpError } from "../../../helpers/httperror.js";
-import empresa from "./empresa.js";
+import { empresa } from "../masterRelations.js";
 
 
 

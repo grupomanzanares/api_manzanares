@@ -1,6 +1,6 @@
 import { matchedData } from "express-validator";
 import { handleHttpError } from "../../../helpers/httperror.js";
-import ccosto from "./ccosto.js";
+import { ccosto } from "../masterRelations.js";
 
 
 
