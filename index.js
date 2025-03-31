@@ -7,6 +7,7 @@ import db from "./config/db.js";
  */
 import userRoutes from './auth/routes/userRoutes.js';
 import authRoutes from './auth/routes/authRoutes.js';
+import rolRoutes from './auth/routes/rolRoutes.js';
 
 
 /***  Rutas Maestros del sistema */
@@ -45,6 +46,8 @@ try {
 /*** Rutas Autenticacion */
 app.use('/api_manzanares/users', userRoutes);
 app.use('/api_manzanares/auth', authRoutes);
+app.use('/api_manzanares/roles', rolRoutes);
+
 
 /***  Rutas del sistema */
 app.use('/api_manzanares/dependencias', dependenciaRoutes);
