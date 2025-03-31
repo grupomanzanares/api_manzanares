@@ -9,11 +9,8 @@ const router = express.Router();
 
 router.get('/', apiAuth, getCcostos)
 
-router.get('/', apiAuth, (req, res) => {
-    const { id, nit } = req.query;
-    if (id) return getCcosto(req, res);
-    if (nit) return getCcostoxNit(req, res);
-  });
+router.get('/por-nit/:nit', apiAuth, validateGetCcostoxNit, getCcostoxNit);
+router.get('/por-id/:id', apiAuth, validateGetCcosto, getCcosto);
   
 
 router.post('/create', apiAuth, validateCreateCcosto, createCcosto)
