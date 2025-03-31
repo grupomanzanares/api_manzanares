@@ -44,6 +44,8 @@ const getCcostoxNit = async(req, res) => {
     try {
         req = matchedData(req)
         const { nit } = req
+        console.log("NIT recibido:", nit); // 👈 VERIFICACIÓN
+
         const data = await ccosto.findOne({
             where: {
                 nit: nit,
@@ -59,7 +61,7 @@ const getCcostoxNit = async(req, res) => {
         console.log(data)
     } catch (error) {
         handleHttpError(res, `Error al traer ${entity}  ` )
-        console.error(error)
+        console.error("Error específico:", error); // 👈 VER ERROR REAL
     }
 }
 
