@@ -11,7 +11,12 @@ const Rol = db.define('roles', {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true
-    }
+    },
+    state: {
+        type: DataTypes.BOOLEAN, 
+        allowNull: false,
+        defaultValue: 1  
+    },
 }, {
     timestamps: true,
     freezeTableName: true // Evita que Sequelize pluralice el nombre de la tabla
