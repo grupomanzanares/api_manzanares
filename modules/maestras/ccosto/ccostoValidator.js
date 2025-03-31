@@ -33,7 +33,7 @@ const validateGetCcosto = [
 ]
 
 const validateGetCcostoxNit = [
-    check('init').exists().notEmpty(),
+    check('nit').exists().notEmpty(),
 
     (req, res, next) =>{
         try {
