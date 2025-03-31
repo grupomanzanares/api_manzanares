@@ -54,7 +54,7 @@ const compraReportada = db.define('compras_reportadas', {
     },
 
     valor: {
-        type: DataTypes.DECIMAL(17, 2), 
+        type: DataTypes.DECIMAL(17, 4), 
         allowNull: false,  
     },
 
