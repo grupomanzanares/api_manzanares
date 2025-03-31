@@ -33,7 +33,7 @@ const validateGetCcosto = [
 ]
 
 const validateGetCcostoxNit = [
-    check('nit').exists().notEmpty(),
+    check('nit').exists().notEmpty().withMessage('El NIT es requerido'),
 
     (req, res, next) =>{
         try {
