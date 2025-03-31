@@ -19,7 +19,8 @@ const validateCreateCompraReportada = [
     .exists().withMessage('El valor es obligatorio')
     .isNumeric().withMessage('El valor debe ser un número válido')
     .custom(value => value > 0).withMessage('El valor debe ser mayor a cero'),
-
+    body('observacionResponsable').optional(),
+    body('ccosto').optional(),
 
     body('user').optional().isString().withMessage('El usuario debe ser una cadena de texto'),
     body('userMod').optional().isString().withMessage('El usuarioMod debe ser una cadena de texto'),
