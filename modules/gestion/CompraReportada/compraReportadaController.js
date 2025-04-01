@@ -1,6 +1,7 @@
 import { matchedData } from "express-validator";
 import { handleHttpError } from "../../../helpers/httperror.js";
 import { compraReportada, comprasEstado, comprasTipo, empresa, User } from "../gestionRelations.js";
+import { emailNotAutorizacion } from "../../../helpers/emails.js";
  
  
 
