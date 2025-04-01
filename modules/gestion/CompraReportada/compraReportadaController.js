@@ -96,8 +96,8 @@ const updateCompraReportada = async (req, res) => {
     console.log('Archivos:', req.files);
 
     try {
-        const { id } = req.params
 
+        const { id } = req.params
         const body = req.body
 
         // Si se subió un archivo PDF, agrégalo al body
@@ -119,10 +119,57 @@ const updateCompraReportada = async (req, res) => {
 
         const updateRegistro = await compraReportada.findByPk(id);
 
+        // ✅ Buscar correos de userMod y responsableId
+        const [usuarioModifico, usuarioResponsable] = await Promise.all([
+            User.findOne({ where: { identificacion: updateRegistro.userMod }, attributes: ['email', 'name'] }),
+            User.findByPk(updateRegistro.responsableId, { attributes: ['email', 'name'] })
+        ]);
+
+           // Validar si se encontró la información
+        if (!usuarioModifico || !usuarioResponsable) {
+            return res.status(500).json({
+            message: 'No se pudo encontrar la información de los usuarios para el envío de correo.'
+            });
+        }
+
+
+           // ✅ Enviar correo solo si estadoId es 2
+        if (updateRegistro.estadoId == 2) {
+            emailNotAutorizacion({
+            tipo: updateRegistro.tipo,
+            numero: updateRegistro.numero,
+            valor: updateRegistro.valor,
+            cufe: updateRegistro.cufe,
+            urlpdf: updateRegistro.urlPdf,
+            responsableId: updateRegistro.responsableId,
+            userMod: updateRegistro.userMod,
+            correoSolicitante: usuarioModifico.correo,
+            nombreSolicitante: usuarioModifico.nombre,
+            correoResponsable: usuarioResponsable.correo,
+            nombreResponsable: usuarioResponsable.nombre
+            });
+        }
+
+
         res.status(200).json({
             message: ` ${entity} actualizado correctamente `,
             data: updateRegistro
         });
+
+
+
+
+             /** Enviar email:  deben estar configurados en el .env las variables para el envio de correo */ 
+                emailNotAutorizacion({
+                    tipo: updateRegistro.tipo,
+                    numero: updateRegistro.numero,
+                    valor: updateRegistro.valor,
+                    cufe: updateRegistro.cufe,
+                    urlpdf:  updateRegistro.urlPdf,
+                    responsableId:  updateRegistro.responsableId,
+                    userMod: updateRegistro.userMod
+                });
+
     } catch (error) {
         handleHttpError(res, `No se pudo actualizar ${entity} `)
         console.error(error)
