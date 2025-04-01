@@ -69,6 +69,8 @@ const emailRecoverPassword = async (data) => {
 
 const emailNotAutorizacion = async (data) => {
 
+    console.log ("data recibida para correo", data);
+
         const transport = nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
             port: process.env.EMAIL_PORT,

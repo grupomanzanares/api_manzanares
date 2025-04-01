@@ -159,16 +159,7 @@ const updateCompraReportada = async (req, res) => {
 
 
 
-             /** Enviar email:  deben estar configurados en el .env las variables para el envio de correo */ 
-                emailNotAutorizacion({
-                    tipo: updateRegistro.tipo,
-                    numero: updateRegistro.numero,
-                    valor: updateRegistro.valor,
-                    cufe: updateRegistro.cufe,
-                    urlpdf:  updateRegistro.urlPdf,
-                    responsableId:  updateRegistro.responsableId,
-                    userMod: updateRegistro.userMod
-                });
+
 
     } catch (error) {
         handleHttpError(res, `No se pudo actualizar ${entity} `)
