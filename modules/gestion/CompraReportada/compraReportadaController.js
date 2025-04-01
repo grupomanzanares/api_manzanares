@@ -120,22 +120,26 @@ const updateCompraReportada = async (req, res) => {
 
         const updateRegistro = await compraReportada.findByPk(id);
 
-        // ✅ Buscar correos de userMod y responsableId
-        const [usuarioModifico, usuarioResponsable] = await Promise.all([
-            User.findOne({ where: { identificacion: updateRegistro.userMod }, attributes: ['email', 'name'] }),
-            User.findByPk(updateRegistro.responsableId, { attributes: ['email', 'name'] })
-        ]);
 
-           // Validar si se encontró la información
-        if (!usuarioModifico || !usuarioResponsable) {
-            return res.status(500).json({
-            message: 'No se pudo encontrar la información de los usuarios para el envío de correo.'
-            });
-        }
 
 
            // ✅ Enviar correo solo si estadoId es 2
         if (updateRegistro.estadoId == 2) {
+
+            // ✅ Buscar correos de userMod y responsableId
+            const [usuarioModifico, usuarioResponsable] = await Promise.all([
+                User.findOne({ where: { identificacion: updateRegistro.userMod }, attributes: ['email', 'name'] }),
+                User.findByPk(updateRegistro.responsableId, { attributes: ['email', 'name'] })
+            ]);
+
+            // Validar si se encontró la información
+            if (!usuarioModifico || !usuarioResponsable) {
+                return res.status(500).json({
+                message: 'No se pudo encontrar la información de los usuarios para el envío de correo.'
+                });
+            }
+
+        
             emailNotAutorizacion({
             tipo: updateRegistro.tipo,
             numero: updateRegistro.numero,
