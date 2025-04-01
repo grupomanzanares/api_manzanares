@@ -144,10 +144,10 @@ const updateCompraReportada = async (req, res) => {
             urlpdf: updateRegistro.urlPdf,
             responsableId: updateRegistro.responsableId,
             userMod: updateRegistro.userMod,
-            correoSolicitante: usuarioModifico.correo,
-            nombreSolicitante: usuarioModifico.nombre,
-            correoResponsable: usuarioResponsable.correo,
-            nombreResponsable: usuarioResponsable.nombre
+            correoSolicitante: usuarioModifico?.email,
+            nombreSolicitante: usuarioModifico?.name,
+            correoResponsable: usuarioResponsable?.email,
+            nombreResponsable: usuarioResponsable?.name
             });
         }
 

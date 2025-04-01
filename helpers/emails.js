@@ -69,6 +69,8 @@ const emailRecoverPassword = async (data) => {
 
 const emailNotAutorizacion = async (data) => {
 
+    const urlBase = 'https://gmanzanares.com.co/api_manzanares/'
+
     console.log ("data recibida para correo", data);
 
         const transport = nodemailer.createTransport({
@@ -113,7 +115,7 @@ const emailNotAutorizacion = async (data) => {
                         <li><strong>Valor:</strong> ${valor}</li>
                         <li><strong>CUFE:</strong> ${cufe}</li>
                     </ul>
-                    <p>Puedes verlo en el siguiente enlace: <a href="${process.env.URL_BACKEND}${urlpdf}">Ver documento</a></p>
+                    <p>Puedes verlo en el siguiente enlace: <a href="${urlBase}${urlpdf}">Ver documento</a></p>
                     <p>Este documento fue gestionado por ${nombreSolicitante} (${correoSolicitante}).</p>
                 `
             });
