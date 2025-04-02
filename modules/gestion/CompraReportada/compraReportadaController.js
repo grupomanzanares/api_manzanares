@@ -2,6 +2,7 @@ import { matchedData } from "express-validator";
 import { handleHttpError } from "../../../helpers/httperror.js";
 import { compraReportada, comprasEstado, comprasTipo, empresa, User } from "../gestionRelations.js";
 import { emailNotAutorizacion } from "../../../helpers/emails.js";
+import { ccosto } from "../../maestras/masterRelations.js";
  
  
 
@@ -32,6 +33,13 @@ const getComprasReportadas = async (req, res) => {
                 }
             ]
         });
+
+        // 2. Cargar todas las empresas y centros de costo
+        const [empresas, centrosCosto] = await Promise.all([
+            empresa.findAll({ attributes: ['id', 'nit'] }),
+            ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
+        ]);
+
         res.json(registros)
     } catch {
         handleHttpError(res, `No se pudo cargar ${entity} s`);
