@@ -40,13 +40,11 @@ const getComprasReportadas = async (req, res) => {
             ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
         ]);
 
-
-
         
         // 3. Armar un resultado enriquecido con nombre del centro de costo
         const resultado = registros.map(registro => {
             const empresaNit = registro.empresa;
-            const ccostoId = registro.ccosto;
+            const codigoCcosto = registro.ccosto;
 
             // Buscar el ID de la empresa a partir del NIT
             const empresaEncontrada = empresas.find(e => e.nit === empresaNit);
@@ -54,7 +52,7 @@ const getComprasReportadas = async (req, res) => {
 
             // Buscar el nombre del centro de costo por código y empresaId
             const ccostoEncontrado = centrosCosto.find(c =>
-                c.id === ccostoId && c.empresaId === empresaId
+                c.codigo === codigoCcosto && c.empresaId === empresaId
             );
 
             return {
@@ -62,6 +60,9 @@ const getComprasReportadas = async (req, res) => {
                 ccostoNombre: ccostoEncontrado?.nombre || null
             };
         });
+
+
+        
 
         res.json(registros)
     } catch {
