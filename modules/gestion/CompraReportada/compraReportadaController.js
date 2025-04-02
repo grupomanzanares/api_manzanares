@@ -54,7 +54,7 @@ const getComprasReportadas = async (req, res) => {
 
             // Buscar el nombre del centro de costo por código y empresaId
             const ccostoEncontrado = centrosCosto.find(c =>
-                c.codigo === codigoCcosto && c.empresaId === empresaId
+                c.id === codigoCcosto && c.empresaId === empresaId
             );
 
             return {
