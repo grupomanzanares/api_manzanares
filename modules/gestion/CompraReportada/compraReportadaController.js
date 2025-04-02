@@ -46,7 +46,7 @@ const getComprasReportadas = async (req, res) => {
         // 3. Armar un resultado enriquecido con nombre del centro de costo
         const resultado = registros.map(registro => {
             const empresaNit = registro.empresa;
-            const codigoCcosto = registro.ccosto;
+            const ccostoId = registro.ccosto;
 
             // Buscar el ID de la empresa a partir del NIT
             const empresaEncontrada = empresas.find(e => e.nit === empresaNit);
@@ -54,7 +54,7 @@ const getComprasReportadas = async (req, res) => {
 
             // Buscar el nombre del centro de costo por código y empresaId
             const ccostoEncontrado = centrosCosto.find(c =>
-                c.id === codigoCcosto && c.empresaId === empresaId
+                c.id === ccostoId && c.empresaId === empresaId
             );
 
             return {
