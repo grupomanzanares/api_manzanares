@@ -34,38 +34,39 @@ const getComprasReportadas = async (req, res) => {
             ]
         });
 
+
         // 2. Cargar todas las empresas y centros de costo
         const [empresas, centrosCosto] = await Promise.all([
             empresa.findAll({ attributes: ['id', 'nit'] }),
             ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
         ]);
 
-        
- 
-        // Enriquecer con nombre del centro de costo
+        // 3. Armar un resultado enriquecido con nombre del centro de costo
         const resultado = registros.map(registro => {
+            const empresaNit = registro.empresa;
             const codigoCcosto = registro.ccosto;
-            const empresaId = registro.empresaInfo?.id;
 
-            // Buscar centro de costo relacionado
-            const ccostoRelacionado = centrosCosto.find(c =>
-                String(c.codigo) === String(codigoCcosto) && c.empresaId == empresaId
+            // Buscar el ID de la empresa a partir del NIT
+            const empresaEncontrada = empresas.find(e => e.nit === empresaNit);
+            const empresaId = empresaEncontrada?.id;
+
+            // Buscar el nombre del centro de costo por código y empresaId
+            const ccostoEncontrado = centrosCosto.find(c =>
+                c.codigo === codigoCcosto && c.empresaId === empresaId
             );
 
             return {
                 ...registro.toJSON(),
-                ccostoNombre: ccostoRelacionado?.nombre || null
+                ccostoNombre: ccostoEncontrado?.nombre || null
             };
         });
 
-
-        
-
-        res.json(registros)
-    } catch {
-        handleHttpError(res, `No se pudo cargar ${entity} s`);
+        res.json(resultado);
+    } catch (error) {
+        console.error(error);
+        handleHttpError(res, `No se pudo cargar ${entity}s`);
     }
-}
+};
 
 const getCompraReportada = async (req, res) => {
     try {
