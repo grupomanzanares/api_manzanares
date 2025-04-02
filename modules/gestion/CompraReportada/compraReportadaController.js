@@ -37,7 +37,7 @@ const getComprasReportadas = async (req, res) => {
         // 2. Cargar todas las empresas y centros de costo
         const [empresas, centrosCosto] = await Promise.all([
             empresa.findAll({ attributes: ['id', 'nit'] }),
-            ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
+            ccosto.findAll({ attributes: ['id','codigo', 'nombre', 'empresaId'] })
         ]);
 
         
@@ -57,7 +57,7 @@ const getComprasReportadas = async (req, res) => {
 
             return {
                 ...registro.toJSON(),
-                ccostoNombre: ccostoEncontrado?.nombre || null
+                ccostoNombre: ccostoEncontrado?.nombre || 'n'
             };
         });
 
