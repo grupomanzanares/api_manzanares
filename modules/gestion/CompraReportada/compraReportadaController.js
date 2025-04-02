@@ -37,27 +37,24 @@ const getComprasReportadas = async (req, res) => {
         // 2. Cargar todas las empresas y centros de costo
         const [empresas, centrosCosto] = await Promise.all([
             empresa.findAll({ attributes: ['id', 'nit'] }),
-            ccosto.findAll({ attributes: ['id','codigo', 'nombre', 'empresaId'] })
+            ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
         ]);
 
         
-        // 3. Armar un resultado enriquecido con nombre del centro de costo
+ 
+        // Enriquecer con nombre del centro de costo
         const resultado = registros.map(registro => {
-            const empresaNit = registro.empresa;
             const codigoCcosto = registro.ccosto;
+            const empresaId = registro.empresaInfo?.id;
 
-            // Buscar el ID de la empresa a partir del NIT
-            const empresaEncontrada = empresas.find(e => e.nit === empresaNit);
-            const empresaId = empresaEncontrada?.id;
-
-            // Buscar el nombre del centro de costo por código y empresaId
+            // Buscar centro de costo relacionado
             const ccostoRelacionado = centrosCosto.find(c =>
                 String(c.codigo) === String(codigoCcosto) && c.empresaId == empresaId
             );
 
             return {
                 ...registro.toJSON(),
-                ccostoNombre: ccostoEncontrado?.nombre || 'n'
+                ccostoNombre: ccostoRelacionado?.nombre || null
             };
         });
 
