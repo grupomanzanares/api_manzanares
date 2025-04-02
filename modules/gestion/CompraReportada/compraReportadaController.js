@@ -32,15 +32,6 @@ const getComprasReportadas = async (req, res) => {
                 }
             ]
         });
-        // 2. Cargar todas las empresas y centros de costo
-            const [empresas, centrosCosto] = await Promise.all([
-            empresa.findAll({ attributes: ['id', 'nit'] }),
-            ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
-        ]);
-
-   
-
-
         res.json(registros)
     } catch {
         handleHttpError(res, `No se pudo cargar ${entity} s`);
