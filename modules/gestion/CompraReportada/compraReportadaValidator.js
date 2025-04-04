@@ -22,6 +22,8 @@ const validateCreateCompraReportada = [
     body('observacionResponsable').optional(),
     body('ccosto').optional(),
     body('observacionContable').optional(),
+    body('observacionTesoreria').optional(),
+    body('recibido').optional(),
     
 
 

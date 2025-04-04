@@ -68,12 +68,21 @@ const compraReportada = db.define('compras_reportadas', {
         allowNull: true
     },
 
+    observacionTesoreria: {
+        type: DataTypes.STRING(100),
+        allowNull: true
+    },
+
     habilitado:{
         type: DataTypes.BOOLEAN, 
         allowNull: false,
         defaultValue: true 
     },
-
+    tesoreria:{
+        type: DataTypes.BOOLEAN, 
+        allowNull: false,
+        defaultValue: false 
+    },
     conciliado:{
         type: DataTypes.BOOLEAN, 
         allowNull: false,
