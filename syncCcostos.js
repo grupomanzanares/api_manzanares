@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import cron from 'node-cron';
-import db from './config/database.js';
+import db from './config/db.js';
 const { syncCCostos } = require('./modules/maestras/ccosto/syncService');
 
 try {
