@@ -27,11 +27,11 @@ const ccosto = db.define('ccostos', {
     },
     user: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
     userMod: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     }
 },
 {

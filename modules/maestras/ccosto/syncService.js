@@ -119,7 +119,9 @@ async function syncronizarCCostos() {
                     codigo: centro,
                     nombre: ncentro,
                     estado: estado,
-                    empresaId: empresaDb.id
+                    empresaId: empresaDb.id,
+                    user : 'CARGUE',
+                    userMod: 'CARGUE'
                 });
                 
                 insertados++;
