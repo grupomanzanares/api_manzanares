@@ -50,7 +50,7 @@ async function fetchCCostos(token) {
         }
         );
     
-        console.log("🔍 Respuesta cruda:", JSON.stringify(response.data, null, 2));
+        // console.log("🔍 Respuesta cruda:", JSON.stringify(response.data, null, 2));
     
         // ✅ VERIFICACIÓN FINAL CLARA
         const datos = response.data?.datos;
