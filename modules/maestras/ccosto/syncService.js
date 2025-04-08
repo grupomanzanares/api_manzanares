@@ -65,11 +65,11 @@ async function fetchCCostos(token) {
 }
 
 
-export async function syncronizarCCostos() {
+async function syncronizarCCostos() {
         try {
         const token = await getToken();
         const ccostosData = await fetchCCostos(token);
-        console.log("📦 Centros de costo recibidos:", ccostosData.length);
+        console.log("📦 Centros de costo recibidos...:", ccostosData.length);
     
         let insertados = 0;
     
