@@ -50,44 +50,56 @@ async function fetchCCostos(token) {
         }
         );
     
-        if (response.data?.esExitosa && Array.isArray(response.data.datos)) {
+        console.log("🔍 Respuesta cruda:", JSON.stringify(response.data, null, 2));
+    
+        if (
+        response.data &&
+        response.data.esExitosa === true &&
+        Array.isArray(response.data.datos)
+        ) {
         return response.data.datos;
         } else {
+        console.error("⚠️ Respuesta inesperada:", response.data);
         throw new Error("❌ La respuesta no contiene datos válidos.");
         }
 }
 
-async function syncronizarCCostos() {
-    try {
+
+export async function syncronizarCCostos() {
+        try {
         const token = await getToken();
         const ccostosData = await fetchCCostos(token);
         console.log("📦 Centros de costo recibidos:", ccostosData.length);
-
+    
+        let insertados = 0;
+    
         for (const item of ccostosData) {
-            const nit = item.EMPRESA_NIT.trim();;
-            const centro = item.CENTRO.trim();;
-            const ncentro = item.NCENTRO.trim();;
-            const estadoRaw = item.ESTADO.trim();;
-            const estado = estadoRaw === "A" ? true : false;
-
-        const empresaDb  = await empresa.findOne({ where: { nit } });
-        if (!empresaDb) {
-            console.warn(`Empresa con NIT ${nit} no encontrada`);
+            const nit = item.EMPRESA_NIT?.toString().trim();
+            const centro = item.CENTRO?.trim();
+            const ncentro = item.NCENTRO?.trim();
+            const estadoRaw = item.ESTADO?.trim();
+            const estado = estadoRaw === "A";
+    
+            const empresaDb = await empresa.findOne({ where: { nit } });
+            if (!empresaDb) {
+            console.warn(`⚠️ Empresa con NIT ${nit} no encontrada`);
             continue;
-        }
-
-        await ccosto.upsert({
+            }
+    
+            await ccosto.upsert({
             codigo: centro,
             nombre: ncentro,
-            estado: estado === "1",
+            estado: estado,
             empresaId: empresaDb.id
-        });
+            });
+    
+            insertados++;
         }
-
-        console.log("Sincronización completada correctamente.");
-    } catch (err) {
-        console.error("Error en sincronización:...", err);
-    }
+    
+        console.log(`✅ Sincronización completada. Registros sincronizados: ${insertados}`);
+        } catch (err) {
+        console.error("❌ Error en sincronización:", err);
+        }
 }
 
 export { syncronizarCCostos };
