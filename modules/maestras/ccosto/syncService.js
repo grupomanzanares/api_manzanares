@@ -81,4 +81,4 @@ async function syncCCostos() {
 
 module.exports = { syncCCostos };
 
-/** Instalar  npm install node-cron */
+/** Instalar  npm install node-cron    npm install axios */

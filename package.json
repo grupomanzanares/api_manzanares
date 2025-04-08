@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "api_manzanares": "file:",
+    "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
