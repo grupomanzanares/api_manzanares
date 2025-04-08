@@ -51,6 +51,7 @@ async function syncronizarCCostos() {
     try {
         const token = await getToken();
         const ccostosData = await fetchCCostos(token);
+        console.log("📦 Datos recibidos:", ccostosData);
 
         for (const item of ccostosData) {
             const nit = item.EMPRESA_NIT.trim();;
