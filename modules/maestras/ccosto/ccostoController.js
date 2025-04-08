@@ -62,7 +62,7 @@ const getCcostoxNit = async(req, res) => {
         }
 
 
-        const data = await ccosto.findOne({
+        const data = await ccosto.findAll({
             where: {
                 empresaId: empresaData.id,
                 estado: true

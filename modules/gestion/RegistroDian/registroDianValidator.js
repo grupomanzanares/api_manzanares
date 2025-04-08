@@ -1,11 +1,20 @@
 import { body, check, validationResult } from "express-validator";
 
-const validateCreateEmpresa = [
+const validateCreateRegistroDian = [
     
-    body('nit').exists().withMessage("La identificación es obligatorio")
+    body('emisor').exists().withMessage("El emisor  es obligatorio")
         .notEmpty().isLength({min: 5, max: 15}),
-    body("logo").optional(),
-    body('nombre').exists().notEmpty().isLength({min: 4, max: 150}),
+    body('nombreEmisor').exists().notEmpty().isLength({min: 4, max: 100}),
+    body('empresa').exists().withMessage("La empresa es obligatorio")
+    .notEmpty().isLength({min: 5, max: 15}),
+    body('tipo').exists().withMessage("El tipo de documento de compra es obligatorio")
+    .notEmpty().isLength({min: 1, max: 30}),
+    body('numero').exists().withMessage("La factura es obligatorio")
+    .notEmpty().isLength({min: 1, max: 15}),
+    body('fecha')
+    .exists().withMessage('La fecha es obligatoria'),
+    body('cufe')
+    .exists().withMessage('La fecha es obligatoria'),
     body('user').optional().isString().withMessage('El usuario debe ser una cadena de texto'),
     body('userMod').optional().isString().withMessage('El usuarioMod debe ser una cadena de texto'),
 
@@ -21,7 +30,7 @@ const validateCreateEmpresa = [
     }
 ];
 
-const validateGetEmpresa = [
+const validateGetRegistroDian = [
     check('id').exists().notEmpty(),
 
     (req, res, next) =>{
@@ -36,6 +45,6 @@ const validateGetEmpresa = [
 ]
 
 export {
-    validateCreateEmpresa,
-    validateGetEmpresa
+    validateCreateRegistroDian,
+    validateGetRegistroDian
 };
