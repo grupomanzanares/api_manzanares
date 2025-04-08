@@ -58,8 +58,8 @@ async function fetchCCostos(token) {
         if (response.data?.esExitosa && Array.isArray(datos)) {
             return datos;
         } else {
-            console.error("⚠️ Respuesta inesperada:", response.data);
-            throw new Error("❌ La respuesta no contiene datos válidos.");
+            console.error("⚠️ Respuesta inesperada...", response.data);
+            throw new Error("❌ La respuesta no contiene datos válidos.....");
         }
 }
 
