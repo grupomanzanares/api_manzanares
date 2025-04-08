@@ -96,7 +96,7 @@ async function syncronizarCCostos() {
         for (const item of ccostosData) {
             try {
                 // Intentar acceder a las propiedades usando múltiples formatos
-                const nit = (item.empresaA_NIT || item.empresa_NIT || item.EMPRESA_NIT || "").toString().trim();
+                const nit = (item.empresA_NIT).toString().trim();
                 const centro = (item.centro || item.CENTRO || "").toString().trim();
                 const ncentro = (item.ncentro || item.NCENTRO || "").toString().trim();
                 const estadoRaw = (item.estado || item.ESTADO || "").toString().trim();
