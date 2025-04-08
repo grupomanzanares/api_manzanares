@@ -96,7 +96,7 @@ async function syncronizarCCostos() {
         for (const item of ccostosData) {
             try {
                 // Intentar acceder a las propiedades usando múltiples formatos
-                const nit = (item.empresA_NIT).toString().trim();
+                const nit = (item.empresA_NIT || "").toString().trim();
                 const centro = (item.centro || item.CENTRO || "").toString().trim();
                 const ncentro = (item.ncentro || item.NCENTRO || "").toString().trim();
                 const estadoRaw = (item.estado || item.ESTADO || "").toString().trim();
@@ -104,7 +104,7 @@ async function syncronizarCCostos() {
                 
                 if (!nit || !centro) {
                     console.warn("⚠️ Item sin NIT o centro válido:", JSON.stringify(item));
-                    errores++;
+                    omitidos++;
                     continue;
                 }
                 
@@ -115,14 +115,27 @@ async function syncronizarCCostos() {
                     continue;
                 }
                 
-                await ccosto.upsert({
-                    codigo: centro,
-                    nombre: ncentro,
-                    estado: estado,
-                    empresaId: empresaDb.id,
-                    user : 'CARGUE',
-                    userMod: 'CARGUE'
+                const [cCostoInstance, created] = await ccosto.findOrCreate({
+                    where: {
+                        codigo: centro,
+                        empresaId: empresaDb.id
+                    },
+                    defaults: {
+                        nombre: ncentro,
+                        estado: estado,
+                        user: 'CARGUE',
+                        userMod: 'CARGUE'
+                    }
                 });
+                
+                // Si el registro existe pero queremos actualizar algunos campos
+                if (!created) {
+                    await cCostoInstance.update({
+                        nombre: ncentro,  // Actualizar nombre si cambió
+                        estado: estado,   // Actualizar estado si cambió
+                        userMod: 'CARGUE' // Marcar quién hizo la modificación
+                    });
+                }
                 
                 insertados++;
             } catch (itemError) {

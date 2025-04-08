@@ -34,6 +34,7 @@ const ccosto = db.define('ccostos', {
         allowNull: true
     }
 },
+
 {
     timestamps: true,
     freezeTableName: true // Evita que Sequelize pluralice el nombre de la tabla
