@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import cron from 'node-cron';
 import db from './config/db.js';
-import { syncCCostos } from "./modules/maestras/ccosto/syncService";
+import { syncCCostos } from "./modules/maestras/ccosto/syncService.js";
 try {
         await db.authenticate();
         await db.sync(); // si quieres reflejar modelos actualizados
