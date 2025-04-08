@@ -75,7 +75,7 @@ async function syncCCostos() {
 
         console.log("Sincronización completada correctamente.");
     } catch (err) {
-        console.error("Error en sincronización:", err);
+        console.error("Error en sincronización:...", err);
     }
 }
 
