@@ -34,30 +34,34 @@ async function getToken() {
 }
 
 async function fetchCCostos(token) {
-    const response = await axios.post(
-            `${externalBaseUrl}/app/informes/informespersonalizados/ejecutarconsultainforme`,
+        const response = await axios.post(
+        `${externalBaseUrl}/app/informes/informespersonalizados/ejecutarconsultainforme`,
         {
             crearArchivo: false,
             idInforme: 53
         },
         {
             headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
-                "id_empresa": "03", // ajusta según lógica dinámica si es necesario
-                "usuario": externalUsername
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "id_empresa": "03",
+            "usuario": externalUsername
             }
         }
-    );
-
-    return response.data;
+        );
+    
+        if (response.data?.esExitosa && Array.isArray(response.data.datos)) {
+        return response.data.datos;
+        } else {
+        throw new Error("❌ La respuesta no contiene datos válidos.");
+        }
 }
 
 async function syncronizarCCostos() {
     try {
         const token = await getToken();
         const ccostosData = await fetchCCostos(token);
-        console.log("📦 Datos recibidos:", ccostosData);
+        console.log("📦 Centros de costo recibidos:", ccostosData.length);
 
         for (const item of ccostosData) {
             const nit = item.EMPRESA_NIT.trim();;
