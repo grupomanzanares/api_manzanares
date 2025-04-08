@@ -8,41 +8,16 @@ import { empresa } from "../gestionRelations.js";
 
 const entity = "registroDian"
 
-const getRegistrosDian = async (req, res) => {
-    try {
-        const registros = await registroDian.findAll({
-            where: { habilitado: true },
-            include: [
-                {
-                    model: empresa,
-                    as: 'empresaInfo',
-                    attributes: ['id', 'nombre', 'nit'],
-                }
-            ]
-        });
-
-
-
-        // 3. Armar un resultado enriquecido con nombre del centro de costo
-        const resultado = registros.map(registro => {
-            const empresaNit = registro.empresa;
-
-
-            // Buscar el ID de la empresa a partir del NIT
-            const empresaEncontrada = empresas.find(e => e.nit === empresaNit);
-            const empresaId = empresaEncontrada?.id;
-
-            return {
-                ...registro.toJSON()
-            };
-        });
-
-        res.json(resultado);
-    } catch (error) {
-        console.error(error);
-        handleHttpError(res, `No se pudo cargar ${entity}s`);
+const getRegistrosDian = async (req, res) =>{
+        try {
+            const registros = await registroDian.findAll({
+                where: {habilitado: true}
+            });
+            res.json(registros)
+        }catch{
+            handleHttpError(res, `No se pudo cargar ${entity} s` ); 
+        }
     }
-};
 
 const getRegistroDian = async (req, res) => {
     try {
