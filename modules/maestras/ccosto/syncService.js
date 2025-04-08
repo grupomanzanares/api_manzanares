@@ -47,7 +47,7 @@ async function fetchCCostos(token) {
     return response.data;
 }
 
-async function syncCCostos() {
+async function syncronizarCCostos() {
     try {
         const token = await getToken();
         const ccostosData = await fetchCCostos(token);
@@ -79,6 +79,6 @@ async function syncCCostos() {
     }
 }
 
-module.exports = { syncCCostos };
+module.exports = { syncronizarCCostos };
 
 /** Instalar  npm install node-cron    npm install axios */
