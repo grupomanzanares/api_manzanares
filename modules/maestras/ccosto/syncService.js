@@ -79,6 +79,6 @@ async function syncronizarCCostos() {
     }
 }
 
-module.exports = { syncronizarCCostos };
+export { syncronizarCCostos };
 
 /** Instalar  npm install node-cron    npm install axios */
