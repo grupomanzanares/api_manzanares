@@ -129,7 +129,7 @@ async function syncronizarCCostos() {
             }
         }
         
-        console.log(`✅ Sincronización completada. Registros sincronizados: ${insertados}, Errores: ${errores}`);
+        console.log(`✅ Sincronización completada. Registros sincronizados: ${insertados}, Omitidos: ${omitidos}`);
     } catch (err) {
         console.error("❌ Error en sincronización:", err);
     }
