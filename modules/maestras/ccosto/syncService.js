@@ -52,15 +52,14 @@ async function fetchCCostos(token) {
     
         console.log("🔍 Respuesta cruda:", JSON.stringify(response.data, null, 2));
     
-        if (
-        response.data &&
-        response.data.esExitosa === true &&
-        Array.isArray(response.data.datos)
-        ) {
-        return response.data.datos;
+        // ✅ VERIFICACIÓN FINAL CLARA
+        const datos = response.data?.datos;
+
+        if (response.data?.esExitosa && Array.isArray(datos)) {
+            return datos;
         } else {
-        console.error("⚠️ Respuesta inesperada:", response.data);
-        throw new Error("❌ La respuesta no contiene datos válidos.");
+            console.error("⚠️ Respuesta inesperada:", response.data);
+            throw new Error("❌ La respuesta no contiene datos válidos.");
         }
 }
 
