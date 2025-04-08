@@ -40,6 +40,10 @@ const registroDian = db.define('registros_dian', {
         type: DataTypes.STRING(150),
         allowNull: false
     },
+    valor: {
+        type: DataTypes.DECIMAL(17, 4), 
+        allowNull: false,  
+    },
     habilitado:{
         type: DataTypes.BOOLEAN, 
         allowNull: false,
