@@ -91,7 +91,7 @@ async function syncronizarCCostos() {
         console.log("Muestra de datos recibidos:", JSON.stringify(ccostosData[0], null, 2));
 
         let insertados = 0;
-        let errores = 0;
+        let omitidos = 0;
 
         for (const item of ccostosData) {
             try {
@@ -111,7 +111,7 @@ async function syncronizarCCostos() {
                 const empresaDb = await empresa.findOne({ where: { nit } });
                 if (!empresaDb) {
                     console.warn(`⚠️ Empresa con NIT ${nit} no encontrada`);
-                    errores++;
+                    omitidos++;
                     continue;
                 }
                 
@@ -125,7 +125,7 @@ async function syncronizarCCostos() {
                 insertados++;
             } catch (itemError) {
                 console.error("❌ Error procesando item:", itemError, "Datos:", JSON.stringify(item));
-                errores++;
+                omitidos++;
             }
         }
         
