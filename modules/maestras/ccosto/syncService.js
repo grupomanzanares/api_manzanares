@@ -14,17 +14,24 @@ const externalPassword = process.env.YEMINUS_PASSWORD
 
 
 async function getToken() {
-    const data = {
-        userName: externalUsername,
-        password: externalPassword,
-        grant_type: "password"
-};
-
-const response = await axios.post(`${externalBaseUrl}/token`, data, {
-    headers: { 'Content-Type': 'application/json' }
-    });
-
-    return response.data.access_token;
+        const data = [
+        {
+            userName: externalUsername,
+            password: externalPassword,
+            grant_type: "password"
+        }
+        ];
+    
+        try {
+        const response = await axios.post(`${externalBaseUrl}/token`, data, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    
+        return response.data.access_token;
+        } catch (error) {
+        console.error("❌ Error al obtener el token:", error.response?.data || error.message);
+        throw error;
+        }
 }
 
 async function fetchCCostos(token) {
