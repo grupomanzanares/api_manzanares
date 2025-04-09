@@ -49,7 +49,7 @@ const createRegistroDian = async (req, res) => {
 
     console.log('Recibido en el servidor:');
     console.log('Cuerpo de la solicitud:', req.body);
-    console.log('Archivos:', req.files);
+
 
 
     try {
@@ -182,21 +182,12 @@ const bulkUpsertRegistrosDian = async (req, res) => {
             console.log(`Item ${i+1}: existente =`, existente ? 'Sí' : 'No');
 
             if (existente) {
-                console.log(`Item ${i+1}: estadoId =`, existente.estadoId);
-                if (existente.estadoId === 1) {
-                    // Asegurarse de que todos los campos necesarios estén en item
-                    console.log(`Item ${i+1}: Actualizando...`);
-                    await existente.update(item);
-                    resultados.actualizados.push({ emisor, numero });
-                    console.log(`Item ${i+1}: Actualizado con éxito`);
-                } else {
                     console.log(`Item ${i+1}: No actualizable por estadoId`);
                     resultados.errores.push({ 
                         emisor, 
                         numero, 
                         error: 'No se puede actualizar porque estadoId no es 1' 
                     });
-                }
             } else {
                 // Garantizar que todos los campos requeridos del modelo estén presentes
                 console.log(`Item ${i+1}: Creando nuevo registro...`);
