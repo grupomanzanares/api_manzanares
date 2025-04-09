@@ -15,6 +15,10 @@ const validateCreateRegistroDian = [
     .exists().withMessage('La fecha es obligatoria'),
     body('cufe')
     .exists().withMessage('La fecha es obligatoria'),
+    body('valor')
+    .exists().withMessage('El valor es obligatorio')
+    .isNumeric().withMessage('El valor debe ser un número válido')
+    .custom(value => value > 0).withMessage('El valor debe ser mayor a cero'),
     body('user').optional().isString().withMessage('El usuario debe ser una cadena de texto'),
     body('userMod').optional().isString().withMessage('El usuarioMod debe ser una cadena de texto'),
 
