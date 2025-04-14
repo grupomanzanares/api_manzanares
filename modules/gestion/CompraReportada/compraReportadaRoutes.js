@@ -1,6 +1,6 @@
 import express from 'express';import { apiAuth } from '../../../auth/middleware/apiauth.js';
 import { validateCreateCompraReportada, validateGetCompraReportada } from './compraReportadaValidator.js';
-import { createCompraReportada, deleteCompraReportada, getComprasReportadas, getCompraReportada, updateCompraReportada, bulkUpsertComprasReportadas } from './compraReportadaController.js';
+import { createCompraReportada, deleteCompraReportada, getComprasReportadas, getCompraReportada, updateCompraReportada, bulkUpsertComprasReportadas, conciliarCompras } from './compraReportadaController.js';
 import upload from '../../../middleware/uploadPdf.js';
 
 
@@ -13,6 +13,7 @@ router.post('/create', apiAuth, validateCreateCompraReportada, createCompraRepor
 router.put('/:id', apiAuth,upload.single('archivo') ,validateGetCompraReportada,  updateCompraReportada)
 router.delete('/delete/:id',  apiAuth, deleteCompraReportada)
 router.post('/bulk-upsert', apiAuth, bulkUpsertComprasReportadas);
+router.post("/conciliar", apiAuth, conciliarCompras);
 
 
 // hola

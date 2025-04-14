@@ -3,6 +3,7 @@ import { handleHttpError } from "../../../helpers/httperror.js";
 import { compraReportada, comprasEstado, comprasTipo, empresa, User } from "../gestionRelations.js";
 import { emailNotAutorizacion } from "../../../helpers/emails.js";
 import { ccosto } from "../../maestras/masterRelations.js";
+import registroDian from "../RegistroDian/registroDian.js";
  
  
 
@@ -391,11 +392,66 @@ const bulkUpsertComprasReportadas = async (req, res) => {
     });
 };
 
+
+
+
+const conciliarCompras = async (req, res) => {
+    try {
+        const registrosDian = await registroDian.findAll({
+            where: {
+                habilitado: true,
+                conciliado: false
+            }
+        });
+
+        let totalConciliados = 0;
+        let errores = [];
+
+        for (const dian of registrosDian) {
+            const compra = await compraReportada.findOne({
+                where: {
+                    cufe: dian.cufe,
+                    numero: dian.numero,
+                    emisor: dian.emisor,
+                    habilitado: true,
+                    conciliado: false
+                }
+            });
+
+            if (compra) {
+                await Promise.all([
+                    compra.update({ conciliado: true, userMod: req.user?.identificacion || "sistema" }),
+                    dian.update({ conciliado: true, userMod: req.user?.identificacion || "sistema" })
+                ]);
+                totalConciliados++;
+            } else {
+                errores.push({
+                    cufe: dian.cufe,
+                    emisor: dian.emisor,
+                    numero: dian.numero,
+                    motivo: 'No se encontró compra reportada coincidente'
+                });
+            }
+        }
+
+        res.status(200).json({
+            mensaje: 'Proceso de conciliación finalizado',
+            totalConciliados,
+            errores
+        });
+
+    } catch (error) {
+        console.error("Error en conciliación:", error);
+        handleHttpError(res, 'Error durante la conciliación de compras');
+    }
+};
+
 export {
     getComprasReportadas,
     getCompraReportada,
     createCompraReportada,
     deleteCompraReportada,
     updateCompraReportada,
-    bulkUpsertComprasReportadas
+    bulkUpsertComprasReportadas,
+    conciliarCompras
 }
