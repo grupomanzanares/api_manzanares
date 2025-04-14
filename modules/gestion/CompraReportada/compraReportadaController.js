@@ -428,7 +428,12 @@ const conciliarCompras = async (req, res) => {
                 errores.push({
                     cufe: dian.cufe,
                     emisor: dian.emisor,
+                    nombreEmisor:   dian.nombreEmisor,
+                    empresa:  dian.empresa,
+                    tipo: dian.tipo,
+                    valor: dian.valor,
                     numero: dian.numero,
+                    fecha: dian.fecha,
                     motivo: 'No se encontró compra reportada coincidente'
                 });
             }
