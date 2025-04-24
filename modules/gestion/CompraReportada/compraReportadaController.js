@@ -405,7 +405,7 @@ const conciliarCompras = async (req, res) => {
         });
 
         let totalConciliados = 0;
-        let errores = [];
+        let noConciliados = [];
 
         for (const dian of registrosDian) {
             const compra = await compraReportada.findOne({
@@ -425,7 +425,7 @@ const conciliarCompras = async (req, res) => {
                 ]);
                 totalConciliados++;
             } else {
-                errores.push({
+                noConciliados.push({
                     cufe: dian.cufe,
                     emisor: dian.emisor,
                     nombreEmisor:   dian.nombreEmisor,
@@ -434,7 +434,8 @@ const conciliarCompras = async (req, res) => {
                     valor: dian.valor,
                     numero: dian.numero,
                     fecha: dian.fecha,
-                    motivo: 'No se encontró compra reportada coincidente'
+                    motivo: 'No se encontró compra reportada coincidente',
+                    conciliado: 0
                 });
             }
         }
@@ -442,7 +443,7 @@ const conciliarCompras = async (req, res) => {
         res.status(200).json({
             mensaje: 'Proceso de conciliación finalizado',
             totalConciliados,
-            errores
+            noConciliados
         });
 
     } catch (error) {
