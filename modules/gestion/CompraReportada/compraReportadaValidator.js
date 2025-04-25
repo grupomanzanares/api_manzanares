@@ -17,15 +17,7 @@ const validateCreateCompraReportada = [
     .exists().withMessage('El cufe es obligatorio'),
 
     body('valor')
-    .exists().withMessage('El valor es obligatorio')
-    .custom(value => {
-        const limpio = value.toString().replace(/\./g, '').replace(',', '.');
-        const numero = parseFloat(limpio);
-        if (isNaN(numero) || numero <= 0) {
-            throw new Error('El valor debe ser un número mayor a cero');
-        }
-        return true;
-    }),
+    .exists().withMessage('El valor es obligatorio').
     
     body('observacionResponsable').optional(),
     body('ccosto').optional(),

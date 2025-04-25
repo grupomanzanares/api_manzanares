@@ -106,13 +106,13 @@ const createCompraReportada = async (req, res) => {
         const body = matchedData(req);
 
         // Formatear el valor decimal
-        if (body.valor) {
-            body.valor = body.valor.toString().replace(/\./g, '').replace(',', '.');
-            body.valor = parseFloat(body.valor);
-            if (isNaN(body.valor)) {
-                return res.status(400).json({ error: 'El campo valor no es un número válido' });
-            }
-        }
+        // if (body.valor) {
+        //     body.valor = body.valor.toString().replace(/\./g, '').replace(',', '.');
+        //     body.valor = parseFloat(body.valor);
+        //     if (isNaN(body.valor)) {
+        //         return res.status(400).json({ error: 'El campo valor no es un número válido' });
+        //     }
+        // }
 
         // Verificar si hay un archivo de imagen y obtener su ruta
         const logoPath = req.file ? `/uploads/${req.file.filename}` : null;
