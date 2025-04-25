@@ -17,7 +17,8 @@ const validateCreateCompraReportada = [
     .exists().withMessage('El cufe es obligatorio'),
 
     body('valor')
-    .exists().withMessage('El valor es obligatorio').
+    .exists().withMessage('El valor es obligatorio'),
+    
     
     body('observacionResponsable').optional(),
     body('ccosto').optional(),
