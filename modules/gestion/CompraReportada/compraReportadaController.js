@@ -103,19 +103,40 @@ const createCompraReportada = async (req, res) => {
 
 
     try {
-        const body = matchedData(req)
+        const body = matchedData(req);
+
+        // Formatear el valor decimal
+        if (body.valor) {
+            body.valor = body.valor.toString().replace(/\./g, '').replace(',', '.');
+            body.valor = parseFloat(body.valor);
+            if (isNaN(body.valor)) {
+                return res.status(400).json({ error: 'El campo valor no es un número válido' });
+            }
+        }
 
         // Verificar si hay un archivo de imagen y obtener su ruta
         const logoPath = req.file ? `/uploads/${req.file.filename}` : null;
 
-        const response = await compraReportada.create({
+        const nuevo  = await compraReportada.create({
             ...body,
             logo: logoPath, // Guardar la ruta en la BD
         });
-        res.send(response)
+        console.log('Registro creado exitosamente:', nuevo.id);
+
+        return res.status(201).json({
+            mensaje: 'Compra reportada creada exitosamente',
+            data: nuevo
+        });
+
+
     } catch (error) {
         console.log(error)
-        handleHttpError(res, `No se pudo crear . ${entity} `)
+        console.error('Error al crear compra reportada:', error);
+        return res.status(500).json({
+            error: 'Error al crear la compra reportada',
+            detalle: error.message,
+            validaciones: error.errors ? error.errors.map(e => e.message) : null
+        });
     }
 }
 
@@ -229,51 +250,7 @@ const deleteCompraReportada = async (req, res) => {
 
 
 
-const bulkUpsertComprasReportadas_ = async (req, res) => {
-    const registros = req.body;
-    if (!Array.isArray(registros)) {
-        return res.status(400).json({ error: 'El cuerpo debe ser un array de objetos.' });
-    }
-    const resultados = {
-        creados: [],
-        actualizados: [],
-        errores: [],
-    };
 
-    for (const item of registros) {
-        try {
-            const { emisor, numero } = item;
-            if (!emisor || !numero) {
-                resultados.errores.push({ item, error: 'Faltan campos obligatorios: emisor o numero' });
-                continue;
-            }
-
-            const existente = await compraReportada.findOne({
-                where: { emisor, numero }
-            });
-
-            if (existente) {
-                if (existente.estadoId === 1) {
-                    await existente.update(item);
-                    resultados.actualizados.push({ emisor, numero });
-                } else {
-                    resultados.errores.push({ emisor, numero, error: 'No se puede actualizar porque estadoId no es 1' });
-                }
-            } else {
-                await compraReportada.create(item);
-                resultados.creados.push({ emisor, numero });
-            }
-
-        } catch (error) {
-            resultados.errores.push({ item, error: error.message });
-        }
-    }
-
-    return res.status(200).json({
-        mensaje: 'Proceso de inserción/actualización completado',
-        resultados
-    });
-};
 
 
 
