@@ -14,11 +14,19 @@ const validateCreateCompraReportada = [
     body('fecha')
     .exists().withMessage('La fecha es obligatoria'),
     body('cufe')
-    .exists().withMessage('La fecha es obligatoria'),
+    .exists().withMessage('El cufe es obligatorio'),
+
     body('valor')
     .exists().withMessage('El valor es obligatorio')
-    .isNumeric().withMessage('El valor debe ser un número válido')
-    .custom(value => value > 0).withMessage('El valor debe ser mayor a cero'),
+    .custom(value => {
+        const limpio = value.toString().replace(/\./g, '').replace(',', '.');
+        const numero = parseFloat(limpio);
+        if (isNaN(numero) || numero <= 0) {
+            throw new Error('El valor debe ser un número mayor a cero');
+        }
+        return true;
+    }),
+    
     body('observacionResponsable').optional(),
     body('ccosto').optional(),
     body('observacionContable').optional(),
