@@ -4,8 +4,8 @@ import { compraReportada, comprasEstado, comprasTipo, empresa, User } from "../g
 import { emailNotAutorizacion } from "../../../helpers/emails.js";
 import { ccosto } from "../../maestras/masterRelations.js";
 import registroDian from "../RegistroDian/registroDian.js";
- 
- 
+
+
 
 
 const entity = "compraReportada"
@@ -16,16 +16,16 @@ const getComprasReportadas = async (req, res) => {
             where: { habilitado: true },
             include: [
                 {
-                    model: comprasTipo ,
-                    attributes: ['id', 'nombre'], 
+                    model: comprasTipo,
+                    attributes: ['id', 'nombre'],
                 },
                 {
-                    model: comprasEstado ,
-                    attributes: ['id', 'nombre'], 
+                    model: comprasEstado,
+                    attributes: ['id', 'nombre'],
                 },
                 {
                     model: User, as: 'responsable',
-                    attributes: ["name"] 
+                    attributes: ["name"]
                 },
                 {
                     model: empresa,
@@ -117,7 +117,7 @@ const createCompraReportada = async (req, res) => {
         // Verificar si hay un archivo de imagen y obtener su ruta
         const logoPath = req.file ? `/uploads/${req.file.filename}` : null;
 
-        const nuevo  = await compraReportada.create({
+        const nuevo = await compraReportada.create({
             ...body,
             logo: logoPath, // Guardar la ruta en la BD
         });
@@ -175,7 +175,7 @@ const updateCompraReportada = async (req, res) => {
 
 
 
-           // ✅ Enviar correo solo si estadoId es 2
+        // ✅ Enviar correo solo si estadoId es 2
         if (updateRegistro.estadoId == 2) {
 
             // ✅ Buscar correos de userMod y responsableId
@@ -187,23 +187,23 @@ const updateCompraReportada = async (req, res) => {
             // Validar si se encontró la información
             if (!usuarioModifico || !usuarioResponsable) {
                 return res.status(500).json({
-                message: 'No se pudo encontrar la información de los usuarios para el envío de correo.'
+                    message: 'No se pudo encontrar la información de los usuarios para el envío de correo.'
                 });
             }
 
-        
+
             emailNotAutorizacion({
-            tipo: updateRegistro.tipo,
-            numero: updateRegistro.numero,
-            valor: updateRegistro.valor,
-            cufe: updateRegistro.cufe,
-            urlpdf: updateRegistro.urlPdf,
-            responsableId: updateRegistro.responsableId,
-            userMod: updateRegistro.userMod,
-            correoSolicitante: usuarioModifico?.email,
-            nombreSolicitante: usuarioModifico?.name,
-            correoResponsable: usuarioResponsable?.email,
-            nombreResponsable: usuarioResponsable?.name
+                tipo: updateRegistro.tipo,
+                numero: updateRegistro.numero,
+                valor: updateRegistro.valor,
+                cufe: updateRegistro.cufe,
+                urlpdf: updateRegistro.urlPdf,
+                responsableId: updateRegistro.responsableId,
+                userMod: updateRegistro.userMod,
+                correoSolicitante: usuarioModifico?.email,
+                nombreSolicitante: usuarioModifico?.name,
+                correoResponsable: usuarioResponsable?.email,
+                nombreResponsable: usuarioResponsable?.name
             });
         }
 
@@ -257,11 +257,11 @@ const deleteCompraReportada = async (req, res) => {
 const bulkUpsertComprasReportadas = async (req, res) => {
     const registros = req.body;
     console.log('Recibidos para procesar:', registros.length, 'registros');
-    
+
     if (!Array.isArray(registros)) {
         return res.status(400).json({ error: 'El cuerpo debe ser un array de objetos.' });
     }
-    
+
     const resultados = {
         creados: [],
         actualizados: [],
@@ -271,15 +271,15 @@ const bulkUpsertComprasReportadas = async (req, res) => {
     for (let i = 0; i < registros.length; i++) {
         const item = registros[i];
         try {
-            console.log(`Procesando item ${i+1}/${registros.length}:`, item);
-            
+            console.log(`Procesando item ${i + 1}/${registros.length}:`, item);
+
             // Validación de campos requeridos
             const { emisor, numero } = item;
             if (!emisor || !numero) {
-                console.log(`Error en item ${i+1}: Faltan campos obligatorios`);
-                resultados.errores.push({ 
-                    item, 
-                    error: 'Faltan campos obligatorios: emisor o numero' 
+                console.log(`Error en item ${i + 1}: Faltan campos obligatorios`);
+                resultados.errores.push({
+                    item,
+                    error: 'Faltan campos obligatorios: emisor o numero'
                 });
                 continue;
             }
@@ -289,17 +289,17 @@ const bulkUpsertComprasReportadas = async (req, res) => {
             if (item.valor) {
                 // Eliminar todos los puntos de los separadores de miles y reemplazar la coma por punto si es necesario
                 item.valor = item.valor.toString().replace(/\./g, '').replace(',', '.');
-                            
+
                 // Convertir a número para asegurarse de que es un valor numérico válido
                 item.valor = parseFloat(item.valor);
-                            
+
                 // Verificar si es un número válido
                 if (isNaN(item.valor)) {
-                                resultados.errores.push({ 
-                                    item, 
-                                    error: `Valor inválido: "${item.valor}" no es un número decimal válido` 
-                                });
-                                continue;
+                    resultados.errores.push({
+                        item,
+                        error: `Valor inválido: "${item.valor}" no es un número decimal válido`
+                    });
+                    continue;
                 }
             }
 
@@ -307,45 +307,45 @@ const bulkUpsertComprasReportadas = async (req, res) => {
             const existente = await compraReportada.findOne({
                 where: { emisor, numero }
             });
-            
-            console.log(`Item ${i+1}: existente =`, existente ? 'Sí' : 'No');
+
+            console.log(`Item ${i + 1}: existente =`, existente ? 'Sí' : 'No');
 
             if (existente) {
-                console.log(`Item ${i+1}: estadoId =`, existente.estadoId);
+                console.log(`Item ${i + 1}: estadoId =`, existente.estadoId);
                 if (existente.estadoId === 1) {
                     // Asegurarse de que todos los campos necesarios estén en item
-                    console.log(`Item ${i+1}: Actualizando...`);
+                    console.log(`Item ${i + 1}: Actualizando...`);
                     await existente.update(item);
                     resultados.actualizados.push({ emisor, numero });
-                    console.log(`Item ${i+1}: Actualizado con éxito`);
+                    console.log(`Item ${i + 1}: Actualizado con éxito`);
                 } else {
-                    console.log(`Item ${i+1}: No actualizable por estadoId`);
-                    resultados.errores.push({ 
-                        emisor, 
-                        numero, 
-                        error: 'No se puede actualizar porque estadoId no es 1' 
+                    console.log(`Item ${i + 1}: No actualizable por estadoId`);
+                    resultados.errores.push({
+                        emisor,
+                        numero,
+                        error: 'No se puede actualizar porque estadoId no es 1'
                     });
                 }
             } else {
                 // Garantizar que todos los campos requeridos del modelo estén presentes
-                console.log(`Item ${i+1}: Creando nuevo registro...`);
+                console.log(`Item ${i + 1}: Creando nuevo registro...`);
                 try {
                     const nuevoRegistro = await compraReportada.create(item);
-                    console.log(`Item ${i+1}: Creado con éxito, ID:`, nuevoRegistro.id);
+                    console.log(`Item ${i + 1}: Creado con éxito, ID:`, nuevoRegistro.id);
                     resultados.creados.push({ emisor, numero, id: nuevoRegistro.id });
                 } catch (creationError) {
-                    console.error(`Item ${i+1}: Error al crear:`, creationError);
-                    resultados.errores.push({ 
-                        item, 
+                    console.error(`Item ${i + 1}: Error al crear:`, creationError);
+                    resultados.errores.push({
+                        item,
                         error: `Error al crear: ${creationError.message}`,
                         detalles: creationError.errors ? creationError.errors.map(e => e.message) : null
                     });
                 }
             }
         } catch (error) {
-            console.error(`Error general en item ${i+1}:`, error);
-            resultados.errores.push({ 
-                item, 
+            console.error(`Error general en item ${i + 1}:`, error);
+            resultados.errores.push({
+                item,
                 error: error.message,
                 stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
             });
@@ -405,8 +405,8 @@ const conciliarCompras = async (req, res) => {
                 noConciliados.push({
                     cufe: dian.cufe,
                     emisor: dian.emisor,
-                    nombreEmisor:   dian.nombreEmisor,
-                    empresa:  dian.empresa,
+                    nombreEmisor: dian.nombreEmisor,
+                    empresa: dian.empresa,
                     tipo: dian.tipo,
                     valor: dian.valor,
                     numero: dian.numero,
