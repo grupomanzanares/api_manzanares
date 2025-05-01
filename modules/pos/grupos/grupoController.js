@@ -1,6 +1,6 @@
 import { matchedData } from "express-validator";
 import grupo from "./grupo"
-
+import { handleHttpError } from "../../../helpers/httperror";
 
 const entity = 'grupos'
 
@@ -69,8 +69,6 @@ const updateGrupo = async (req, res) => {
     
     console.log('Recibido en el servidor:');
     console.log('Cuerpo de la solicitud:', req.body);
-    console.log('Archivos:', req.files);
-
     try {
         const { codigo } = req.params
         const body = req.body
@@ -103,7 +101,7 @@ const updateGrupo = async (req, res) => {
         })
     } catch (error) {
         console.error('Error al actualizar el grupo', error)
-        return res.status(500). json({
+        return res.status(500).json({
             error: 'Error al actualizar el grupo',
             detalle: error.message,
             validaciones: error.errors ? error.errors.map(e => e.message) : null
@@ -114,7 +112,7 @@ const updateGrupo = async (req, res) => {
 const deleteGrupo = async (req, res) => {
     try {
         const { codigo } = req.params
-        const response = await compraReportada.update({ habilitado: false }, {
+        const response = await grupo.update({ habilitado: false }, {
             where: { codigo, habilitado: true }
         })
 
@@ -125,7 +123,7 @@ const deleteGrupo = async (req, res) => {
         }
 
         res.status(200).json({
-            message: `${entity} , eliminada con exito`
+            message: `${entity} , eliminado con exito`
         })
     } catch (error) {
         handleHttpError(res, `No se pudo eliminar ${entity} `)

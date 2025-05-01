@@ -65,3 +65,77 @@ const createLineas = async (req, res) => {
         });
     }
 }
+
+const updateLineas = async (req, res) => {
+    console.log('Recibido en el servidor:');
+    console.log('Cuerpo de la solicitud:', req.body);
+
+    try {
+        const { codigo } = req.params
+        const body = req.body
+
+        const [updatedCount] = await lineas.findByPk(codigo)
+
+        if (updatedCount === 0) {
+            return res.status(404).json({
+                messege: `${entity} no se encontraron o no se realizaron cambios`
+            })
+        }
+
+        const lineasExiste = await lineas.findByPk(codigo)
+
+        if (!lineasExiste || lineasExiste.habilitado) {
+            return res.status(404).json({
+                messege:`${entity} no encontrado o inactivo`
+            })
+        }
+
+        await lineas.update(body, {
+            where: { codigo }
+        })
+
+        const lineasActualizada = await lineas.findByPk(codigo)
+
+        return res.status(200).json({
+            messege: `${entity} actualizado exitosamente`,
+            data: lineasActualizada
+        })
+    } catch (error) {
+        console.error('Error al actualizar las lineas', error)
+        return res.status(500).json({
+            error: 'Error al actualizar la linea',
+            detalle: error.messege,
+            validaciones: error.errors ? error.errors.map(e => e.messege) : null
+        })
+    }
+}
+
+const deleteLineas = async (req, res) => {
+    try {
+        const { codigo } = req.params
+        const response = await lineas.update({ habilitado: false }, {
+            where: { codigo,habilitado: true }
+        })
+
+        if (response === 0) {
+            return req.status(404).json({
+                messege: `${entity}, no encontrado y/o inactivo`
+            })
+        }
+
+        res.status(200).json({
+            messege: `${entity}, eliminada con exito`
+        })
+    } catch (error) {
+        handleHttpError(res, `No se puedo eliminar ${entity}`)
+        console.error(error)
+    }
+}
+
+export {
+    getLinea,
+    getLineas,
+    createLineas,
+    updateLineas,
+    deleteLineas
+}
