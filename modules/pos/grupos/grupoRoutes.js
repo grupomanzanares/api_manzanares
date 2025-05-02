@@ -8,5 +8,5 @@ const router = express.Router();
 router.get('/', apiAuth, getGrupos)
 router.get('/:codigo', apiAuth, validateGetGrupo, getGrupo)
 router.post('/create', apiAuth, validateCreateGrupo, createGrupos)
-router.put(':/codigo', apiAuth, validateGetGrupo, updateGrupo)
-router.delete('/delete/codigo', apiAuth, deleteGrupo)
+router.put('/:codigo', apiAuth, validateGetGrupo, updateGrupo)
+router.delete('/delete/:codigo', apiAuth, deleteGrupo)
