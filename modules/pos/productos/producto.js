@@ -10,5 +10,7 @@ const producto = db.define('productos', {
     descripcion: {
         type: DataTypes.STRING(100),
         allowNull: false
-    }
+    },
+
+    
 })
