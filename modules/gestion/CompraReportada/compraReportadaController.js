@@ -101,7 +101,7 @@ const createCompraReportada = async (req, res) => {
     console.log('Cuerpo de la solicitud:', req.body);
     console.log('Archivos:', req.files);
 
-    await sleep(60000); // 5000 milisegundos = 5 segundos
+    // await sleep(60000); // 5000 milisegundos = 5 segundos
 
 
     try {
