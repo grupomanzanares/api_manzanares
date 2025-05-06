@@ -85,14 +85,14 @@ const getCompraReportada = async (req, res) => {
             })
         }
         res.status(200).json(data);
-        // console.log(data)
+        // console.log(data) /
     } catch (error) {
         handleHttpError(res, `Error al traer ${entity}  `)
         console.error(error)
     }
 }
 
-
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const createCompraReportada = async (req, res) => {
 
@@ -100,6 +100,8 @@ const createCompraReportada = async (req, res) => {
     console.log('Recibido en el servidor:');
     console.log('Cuerpo de la solicitud:', req.body);
     console.log('Archivos:', req.files);
+
+    await sleep(60000); // 5000 milisegundos = 5 segundos
 
 
     try {
