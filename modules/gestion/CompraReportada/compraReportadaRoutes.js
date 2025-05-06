@@ -1,4 +1,5 @@
-import express from 'express';import { apiAuth } from '../../../auth/middleware/apiauth.js';
+import express from 'express';
+import { apiAuth } from '../../../auth/middleware/apiauth.js';
 import { validateCreateCompraReportada, validateGetCompraReportada } from './compraReportadaValidator.js';
 import { createCompraReportada, deleteCompraReportada, getComprasReportadas, getCompraReportada, updateCompraReportada, bulkUpsertComprasReportadas, conciliarCompras } from './compraReportadaController.js';
 import upload from '../../../middleware/uploadPdf.js';
