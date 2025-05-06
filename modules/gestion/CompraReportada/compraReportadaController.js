@@ -85,7 +85,7 @@ const getCompraReportada = async (req, res) => {
             })
         }
         res.status(200).json(data);
-        console.log(data)
+        // console.log(data)
     } catch (error) {
         handleHttpError(res, `Error al traer ${entity}  `)
         console.error(error)
