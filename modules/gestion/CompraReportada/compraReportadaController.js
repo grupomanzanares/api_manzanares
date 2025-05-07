@@ -399,8 +399,8 @@ const conciliarCompras = async (req, res) => {
 
             if (compra) {
                 await Promise.all([
-                    compra.update({ conciliado: true, userMod: req.user?.identificacion || "sistema" }),
-                    dian.update({ conciliado: true, userMod: req.user?.identificacion || "sistema" })
+                    compra.update({ conciliado: true }),
+                    dian.update({ conciliado: true })
                 ]);
                 totalConciliados++;
             } else {
