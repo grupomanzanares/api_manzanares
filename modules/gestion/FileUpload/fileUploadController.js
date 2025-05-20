@@ -62,7 +62,7 @@ const processZipFile = async (req, res) => {
             const newFilePath = path.join(uploadDir, newFileName);
 
             // Extraer el archivo usando el método correcto
-            const extractedData = zip.readFile(entry);
+            const extractedData = entry.getData();
             await fs.promises.writeFile(newFilePath, extractedData);
         }
 
@@ -82,7 +82,7 @@ const processZipFile = async (req, res) => {
         console.error('Error procesando el archivo ZIP:', error);
         return res.status(500).json({ 
             success: false,
-            message: 'Error al procesar el archivo ZIP..',
+            message: 'Error al procesar el archivo ZIP',
             error: error.message 
         });
     }
