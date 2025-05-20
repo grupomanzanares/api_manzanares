@@ -72,7 +72,7 @@ const processZipFile = async (req, res) => {
         // Eliminar el archivo ZIP original usando promesas
         await fs.promises.unlink(zipFilePath);
 
-        // Buscar y actualizar en compraReportada
+        // Intentar buscar y actualizar en compraReportada (opcional)
         try {
             // Buscar el registro en compraReportada donde la concatenación de emisor y numero coincida con el nombre del archivo
             const registro = await compraReportada.findOne({
@@ -89,37 +89,43 @@ const processZipFile = async (req, res) => {
                 }
             });
 
+            let mensaje = 'Archivos procesados correctamente';
+            let registroInfo = null;
+
             if (registro) {
                 // Actualizar el registro con las URLs de los archivos
                 await registro.update({
                     urlPdf: `/uploads/${zipFileName}.pdf`
                 });
-
-                return res.status(200).json({ 
-                    success: true,
-                    message: 'Archivos procesados y registro actualizado correctamente',
-                    files: {
-                        xml: `${zipFileName}.xml`,
-                        pdf: `${zipFileName}.pdf`
-                    },
-                    registro: {
-                        id: registro.id,
-                        emisor: registro.emisor,
-                        numero: registro.numero
-                    }
-                });
-            } else {
-                return res.status(404).json({
-                    success: false,
-                    message: 'No se encontró un registro en compraReportada que coincida con el nombre del archivo'
-                });
+                mensaje = 'Archivos procesados y registro actualizado correctamente';
+                registroInfo = {
+                    id: registro.id,
+                    emisor: registro.emisor,
+                    numero: registro.numero
+                };
             }
+
+            return res.status(200).json({ 
+                success: true,
+                message: mensaje,
+                files: {
+                    xml: `${zipFileName}.xml`,
+                    pdf: `${zipFileName}.pdf`
+                },
+                ...(registroInfo && { registro: registroInfo })
+            });
+
         } catch (dbError) {
             console.error('Error al actualizar en la base de datos:', dbError);
-            return res.status(500).json({
-                success: false,
-                message: 'Error al actualizar el registro en la base de datos',
-                error: dbError.message
+            // Aún si hay error en la base de datos, devolvemos éxito porque los archivos se procesaron correctamente
+            return res.status(200).json({
+                success: true,
+                message: 'Archivos procesados correctamente (no se pudo actualizar el registro en la base de datos)',
+                files: {
+                    xml: `${zipFileName}.xml`,
+                    pdf: `${zipFileName}.pdf`
+                },
+                dbError: dbError.message
             });
         }
 
