@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import AdmZip from 'adm-zip';
 import { Op } from 'sequelize';
-
+import db from '../../../config/db.js';
 import { compraReportada } from '../gestionRelations.js';
 
 export const uploadZipFile = async (req, res) => {
@@ -78,10 +78,10 @@ const processZipFile = async (req, res) => {
             const registro = await compraReportada.findOne({
                 where: {
                     [Op.and]: [
-                        sequelize.where(
-                            sequelize.fn('CONCAT', 
-                                sequelize.col('emisor'), 
-                                sequelize.col('numero')
+                        db.where(
+                            db.fn('CONCAT', 
+                                db.col('emisor'), 
+                                db.col('numero')
                             ),
                             zipFileName
                         )
