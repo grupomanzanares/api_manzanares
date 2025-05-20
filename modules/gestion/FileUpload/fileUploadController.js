@@ -36,7 +36,7 @@ const processZipFile = async (req, res) => {
 
         // Verificar que hay exactamente dos archivos
         if (zipEntries.length !== 2) {
-            await fs.unlink(zipFilePath); // Eliminar el ZIP
+            await fs.promises.unlink(zipFilePath); // Eliminar el ZIP usando promesas
             return res.status(400).json({ 
                 success: false,
                 message: 'El archivo ZIP debe contener exactamente dos archivos' 
@@ -48,7 +48,7 @@ const processZipFile = async (req, res) => {
         const hasPdf = zipEntries.some(entry => entry.entryName.toLowerCase().endsWith('.pdf'));
 
         if (!hasXml || !hasPdf) {
-            await fs.unlink(zipFilePath);
+            await fs.promises.unlink(zipFilePath); // Eliminar el ZIP usando promesas
             return res.status(400).json({ 
                 success: false,
                 message: 'El archivo ZIP debe contener un archivo XML y un archivo PDF' 
@@ -66,8 +66,8 @@ const processZipFile = async (req, res) => {
             await fs.promises.writeFile(newFilePath, extractedData);
         }
 
-        // Eliminar el archivo ZIP original
-        await fs.unlink(zipFilePath);
+        // Eliminar el archivo ZIP original usando promesas
+        await fs.promises.unlink(zipFilePath);
 
         return res.status(200).json({ 
             success: true,
