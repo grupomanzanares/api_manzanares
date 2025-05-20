@@ -286,7 +286,7 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                 continue;
             }
 
-            // Agregar la URL del PDF basada en emisor y numero
+            // Agregar la URL del PDF basada en emisor y numero....
             item.urlPdf = `/uploads/${emisor}${numero}.pdf`;
 
             // Formatear el valor decimal correctamente
@@ -372,7 +372,6 @@ const bulkUpsertComprasReportadas = async (req, res) => {
         resultados
     });
 };
-
 
 
 
