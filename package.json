@@ -11,6 +11,7 @@
   "author": "Sandra Milena Villamizar",
   "license": "ISC",
   "dependencies": {
+    "adm-zip": "^0.5.16",
     "api_manzanares": "file:",
     "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
