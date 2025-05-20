@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import AdmZip from 'adm-zip';
-import { compraReportada } from '../../../models/compraReportada.js';
 import { Op } from 'sequelize';
-import { sequelize } from '../../../config/database.js';
+
+import { compraReportada } from '../gestionRelations.js';
 
 export const uploadZipFile = async (req, res) => {
     try {
@@ -92,8 +92,7 @@ const processZipFile = async (req, res) => {
             if (registro) {
                 // Actualizar el registro con las URLs de los archivos
                 await registro.update({
-                    urlPdf: `/uploads/${zipFileName}.pdf`,
-                    urlXml: `/uploads/${zipFileName}.xml`
+                    urlPdf: `/uploads/${zipFileName}.pdf`
                 });
 
                 return res.status(200).json({ 
