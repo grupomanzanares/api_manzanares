@@ -38,7 +38,8 @@ const processZipFile = async (req, res) => {
         if (zipEntries.length !== 2) {
             await fs.unlink(zipFilePath); // Eliminar el ZIP
             return res.status(400).json({ 
-                error: 'El archivo ZIP debe contener exactamente dos archivos' 
+                success: false,
+                message: 'El archivo ZIP debe contener exactamente dos archivos' 
             });
         }
 
@@ -49,7 +50,8 @@ const processZipFile = async (req, res) => {
         if (!hasXml || !hasPdf) {
             await fs.unlink(zipFilePath);
             return res.status(400).json({ 
-                error: 'El archivo ZIP debe contener un archivo XML y un archivo PDF' 
+                success: false,
+                message: 'El archivo ZIP debe contener un archivo XML y un archivo PDF' 
             });
         }
 
@@ -59,12 +61,9 @@ const processZipFile = async (req, res) => {
             const newFileName = `${zipFileName}${ext}`;
             const newFilePath = path.join(uploadDir, newFileName);
 
-            // Extraer el archivo
-            zip.extractEntryTo(entry, uploadDir, false, true);
-            
-            // Renombrar el archivo extraído
-            const extractedPath = path.join(uploadDir, entry.entryName);
-            await fs.rename(extractedPath, newFilePath);
+            // Extraer el archivo usando el método correcto
+            const extractedData = zip.readFile(entry);
+            await fs.promises.writeFile(newFilePath, extractedData);
         }
 
         // Eliminar el archivo ZIP original
@@ -83,7 +82,7 @@ const processZipFile = async (req, res) => {
         console.error('Error procesando el archivo ZIP:', error);
         return res.status(500).json({ 
             success: false,
-            message: 'Error al procesar el archivo ZIP',
+            message: 'Error al procesar el archivo ZIP..',
             error: error.message 
         });
     }
