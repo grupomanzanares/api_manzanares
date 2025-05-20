@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import AdmZip from 'adm-zip';
+import { compraReportada } from '../../../models/compraReportada.js';
+import { Op } from 'sequelize';
+import { sequelize } from '../../../config/database.js';
 
 export const uploadZipFile = async (req, res) => {
     try {
@@ -69,14 +72,57 @@ const processZipFile = async (req, res) => {
         // Eliminar el archivo ZIP original usando promesas
         await fs.promises.unlink(zipFilePath);
 
-        return res.status(200).json({ 
-            success: true,
-            message: 'Archivos procesados correctamente',
-            files: {
-                xml: `${zipFileName}.xml`,
-                pdf: `${zipFileName}.pdf`
+        // Buscar y actualizar en compraReportada
+        try {
+            // Buscar el registro en compraReportada donde la concatenación de emisor y numero coincida con el nombre del archivo
+            const registro = await compraReportada.findOne({
+                where: {
+                    [Op.and]: [
+                        sequelize.where(
+                            sequelize.fn('CONCAT', 
+                                sequelize.col('emisor'), 
+                                sequelize.col('numero')
+                            ),
+                            zipFileName
+                        )
+                    ]
+                }
+            });
+
+            if (registro) {
+                // Actualizar el registro con las URLs de los archivos
+                await registro.update({
+                    urlPdf: `/uploads/${zipFileName}.pdf`,
+                    urlXml: `/uploads/${zipFileName}.xml`
+                });
+
+                return res.status(200).json({ 
+                    success: true,
+                    message: 'Archivos procesados y registro actualizado correctamente',
+                    files: {
+                        xml: `${zipFileName}.xml`,
+                        pdf: `${zipFileName}.pdf`
+                    },
+                    registro: {
+                        id: registro.id,
+                        emisor: registro.emisor,
+                        numero: registro.numero
+                    }
+                });
+            } else {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No se encontró un registro en compraReportada que coincida con el nombre del archivo'
+                });
             }
-        });
+        } catch (dbError) {
+            console.error('Error al actualizar en la base de datos:', dbError);
+            return res.status(500).json({
+                success: false,
+                message: 'Error al actualizar el registro en la base de datos',
+                error: dbError.message
+            });
+        }
 
     } catch (error) {
         console.error('Error procesando el archivo ZIP:', error);
