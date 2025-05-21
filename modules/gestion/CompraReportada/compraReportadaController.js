@@ -432,6 +432,68 @@ const conciliarCompras = async (req, res) => {
     }
 };
 
+const getComprasPorAutorizar = async (req, res) => {
+    try {
+        const registros = await compraReportada.findAll({
+            where: { 
+                habilitado: true,
+                estadoId: 2 // Estado por autorizar
+            },
+            include: [
+                {
+                    model: comprasTipo,
+                    attributes: ['id', 'nombre'],
+                },
+                {
+                    model: comprasEstado,
+                    attributes: ['id', 'nombre'],
+                },
+                {
+                    model: User, as: 'responsable',
+                    attributes: ["name"]
+                },
+                {
+                    model: empresa,
+                    as: 'empresaInfo',
+                    attributes: ['id', 'nombre', 'nit'],
+                }
+            ],
+            order: [['createdAt', 'DESC']] // Ordenar por fecha de creación descendente
+        });
+
+        // 2. Cargar todas las empresas y centros de costo
+        const [empresas, centrosCosto] = await Promise.all([
+            empresa.findAll({ attributes: ['id', 'nit'] }),
+            ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
+        ]);
+
+        // 3. Armar un resultado enriquecido con nombre del centro de costo
+        const resultado = registros.map(registro => {
+            const empresaNit = registro.empresa;
+            const codigoCcosto = registro.ccosto;
+
+            // Buscar el ID de la empresa a partir del NIT
+            const empresaEncontrada = empresas.find(e => e.nit === empresaNit);
+            const empresaId = empresaEncontrada?.id;
+
+            // Buscar el nombre del centro de costo por código y empresaId
+            const ccostoEncontrado = centrosCosto.find(c =>
+                c.codigo === codigoCcosto && c.empresaId === empresaId
+            );
+
+            return {
+                ...registro.toJSON(),
+                ccostoNombre: ccostoEncontrado?.nombre || null
+            };
+        });
+
+        res.json(resultado);
+    } catch (error) {
+        console.error(error);
+        handleHttpError(res, `No se pudieron cargar las compras por autorizar`);
+    }
+};
+
 export {
     getComprasReportadas,
     getCompraReportada,
@@ -439,5 +501,6 @@ export {
     deleteCompraReportada,
     updateCompraReportada,
     bulkUpsertComprasReportadas,
-    conciliarCompras
+    conciliarCompras,
+    getComprasPorAutorizar
 }
