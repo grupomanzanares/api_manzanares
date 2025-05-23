@@ -449,8 +449,9 @@ const getComprasPorAutorizar = async (req, res) => {
                     attributes: ['id', 'nombre'],
                 },
                 {
-                    model: User, as: 'responsable',
-                    attributes: ["name"]
+                    model: User, 
+                    as: 'responsable',
+                    attributes: ["name", "email", "celphone"]
                 },
                 {
                     model: empresa,
