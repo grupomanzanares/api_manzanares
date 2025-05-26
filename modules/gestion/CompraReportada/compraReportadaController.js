@@ -295,28 +295,6 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                 continue;
             }
 
-            // Buscar responsable en matriz_autorizaciones
-            const autorizacion = await matrizAutorizaciones.findOne({
-                where: {
-                    empresa: empresa,
-                    emisor: emisor
-                },
-                include: [{
-                    model: User,
-                    as: 'responsable',
-                    attributes: ['id', 'email', 'name']
-                }]
-            });
-
-            // Si se encuentra un responsable, asignarlo al item
-            if (autorizacion && autorizacion.responsable) {
-                item.responsableId = autorizacion.responsable.id;
-                item.estadoId = 2; // Estado por autorizar
-            }
-
-            // Agregar la URL del PDF basada en emisor y numero
-            item.urlPdf = `/uploads/${emisor}${numero}.pdf`;
-
             // Formatear el valor decimal correctamente
             if (item.valor) {
                 item.valor = item.valor.toString().replace(/\./g, '').replace(',', '.');
@@ -341,6 +319,27 @@ const bulkUpsertComprasReportadas = async (req, res) => {
             if (existente) {
                 console.log(`Item ${i + 1}: estadoId =`, existente.estadoId);
                 if (existente.estadoId === 1) {
+                    // Solo buscar responsable en matriz_autorizaciones si el registro existente no tiene responsable
+                    if (!existente.responsableId) {
+                        const autorizacion = await matrizAutorizaciones.findOne({
+                            where: {
+                                empresa: empresa,
+                                emisor: emisor
+                            },
+                            include: [{
+                                model: User,
+                                as: 'responsable',
+                                attributes: ['id', 'email', 'name']
+                            }]
+                        });
+
+                        // Si se encuentra un responsable, asignarlo al item
+                        if (autorizacion && autorizacion.responsable) {
+                            item.responsableId = autorizacion.responsable.id;
+                            item.estadoId = 2; // Estado por autorizar
+                        }
+                    }
+
                     console.log(`Item ${i + 1}: Actualizando...`);
                     await existente.update(item);
                     resultados.actualizados.push({ emisor, numero });
@@ -379,6 +378,28 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                     });
                 }
             } else {
+                // Para registros nuevos, generar URL del PDF
+                item.urlPdf = `/uploads/${emisor}${numero}.pdf`;
+
+                // Para registros nuevos, buscar responsable en matriz_autorizaciones
+                const autorizacion = await matrizAutorizaciones.findOne({
+                    where: {
+                        empresa: empresa,
+                        emisor: emisor
+                    },
+                    include: [{
+                        model: User,
+                        as: 'responsable',
+                        attributes: ['id', 'email', 'name']
+                    }]
+                });
+
+                // Si se encuentra un responsable, asignarlo al item
+                if (autorizacion && autorizacion.responsable) {
+                    item.responsableId = autorizacion.responsable.id;
+                    item.estadoId = 2; // Estado por autorizar
+                }
+
                 console.log(`Item ${i + 1}: Creando nuevo registro...`);
                 try {
                     const nuevoRegistro = await compraReportada.create(item);
