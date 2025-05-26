@@ -1,6 +1,6 @@
 import { matchedData } from "express-validator";
 import { handleHttpError } from "../../../helpers/httperror.js";
-import { compraReportada, comprasEstado, comprasTipo, empresa, User } from "../gestionRelations.js";
+import { compraReportada, comprasEstado, comprasTipo, empresa, User, matrizAutorizaciones } from "../gestionRelations.js";
 import { emailNotAutorizacion } from "../../../helpers/emails.js";
 import { ccosto } from "../../maestras/masterRelations.js";
 import registroDian from "../RegistroDian/registroDian.js";
@@ -144,14 +144,11 @@ const createCompraReportada = async (req, res) => {
 
 
 const updateCompraReportada = async (req, res) => {
-
-
     console.log('Recibido en el servidor:');
     console.log('Cuerpo de la solicitud:', req.body);
     console.log('Archivos:', req.files);
 
     try {
-
         const { id } = req.params
         const body = req.body
 
@@ -159,7 +156,6 @@ const updateCompraReportada = async (req, res) => {
         if (req.file) {
             body.urlPdf = `/uploads/${req.file.filename}`;
         }
-
 
         // Ejecuta la actualización
         const [updatedCount] = await compraReportada.update(body, {
@@ -174,12 +170,32 @@ const updateCompraReportada = async (req, res) => {
 
         const updateRegistro = await compraReportada.findByPk(id);
 
+        // Si el estado es 3 (autorizado), guardar en matrizAutorizaciones
+        if (updateRegistro.estadoId === 3) {
+            // Verificar si ya existe en matrizAutorizaciones
+            const existeAutorizacion = await matrizAutorizaciones.findOne({
+                where: {
+                    empresa: updateRegistro.empresa,
+                    emisor: updateRegistro.emisor,
+                    responsableId: updateRegistro.responsableId
+                }
+            });
 
-
+            // Si no existe, crear nueva autorización
+            if (!existeAutorizacion) {
+                await matrizAutorizaciones.create({
+                    empresa: updateRegistro.empresa,
+                    emisor: updateRegistro.emisor,
+                    responsableId: updateRegistro.responsableId,
+                    fechaAutorizacion: new Date(),
+                    user: updateRegistro.userMod,
+                    userMod: updateRegistro.userMod
+                });
+            }
+        }
 
         // ✅ Enviar correo solo si estadoId es 2
         if (updateRegistro.estadoId == 2) {
-
             // ✅ Buscar correos de userMod y responsableId
             const [usuarioModifico, usuarioResponsable] = await Promise.all([
                 User.findOne({ where: { identificacion: updateRegistro.userMod }, attributes: ['email', 'name'] }),
@@ -192,7 +208,6 @@ const updateCompraReportada = async (req, res) => {
                     message: 'No se pudo encontrar la información de los usuarios para el envío de correo.'
                 });
             }
-
 
             emailNotAutorizacion({
                 tipo: updateRegistro.tipo,
@@ -209,16 +224,10 @@ const updateCompraReportada = async (req, res) => {
             });
         }
 
-
         res.status(200).json({
             message: ` ${entity} actualizado correctamente `,
             data: updateRegistro
         });
-
-
-
-
-
 
     } catch (error) {
         handleHttpError(res, `No se pudo actualizar ${entity} `)
