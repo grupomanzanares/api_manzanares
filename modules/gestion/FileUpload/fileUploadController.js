@@ -5,6 +5,14 @@ import { Op } from 'sequelize';
 import db from '../../../config/db.js';
 import { compraReportada } from '../gestionRelations.js';
 
+// Función para limpiar el nombre del archivo
+function cleanFileName(name) {
+    return name
+        .replace(/^['"]+|['"]+$/g, '') // quita comillas al inicio/final
+        .replace(/^RV: ?/, '')           // quita RV: y posible espacio
+        .trim();                         // quita espacios al inicio/final
+}
+
 export const uploadZipFile = async (req, res) => {
     try {
         if (!req.file) {
@@ -59,9 +67,15 @@ const processZipFile = async (req, res) => {
         }
 
         // Extraer y renombrar los archivos
+        let cleanBaseName = null;
         for (const entry of zipEntries) {
             const ext = path.extname(entry.entryName).toLowerCase();
-            const newFileName = `${zipFileName}${ext}`;
+            // Limpia el nombre base (sin extensión)
+            let baseName = path.basename(entry.entryName, ext);
+            baseName = cleanFileName(baseName);
+            if (!cleanBaseName) cleanBaseName = baseName; // Usar el primero como referencia para la BD
+
+            const newFileName = `${baseName}${ext}`;
             const newFilePath = path.join(uploadDir, newFileName);
 
             // Extraer el archivo usando el método correcto
@@ -74,7 +88,7 @@ const processZipFile = async (req, res) => {
 
         // Intentar buscar y actualizar en compraReportada (opcional)
         try {
-            // Buscar el registro en compraReportada donde la concatenación de emisor y numero coincida con el nombre del archivo
+            // Buscar el registro en compraReportada donde la concatenación de emisor y numero coincida con el nombre limpio del archivo
             const registro = await compraReportada.findOne({
                 where: {
                     [Op.and]: [
@@ -83,7 +97,7 @@ const processZipFile = async (req, res) => {
                                 db.col('emisor'), 
                                 db.col('numero')
                             ),
-                            zipFileName
+                            cleanBaseName
                         )
                     ]
                 }
@@ -95,7 +109,7 @@ const processZipFile = async (req, res) => {
             if (registro) {
                 // Actualizar el registro con las URLs de los archivos
                 await registro.update({
-                    urlPdf: `/uploads/${zipFileName}.pdf`
+                    urlPdf: `/uploads/${cleanBaseName}.pdf`
                 });
                 mensaje = 'Archivos procesados y registro actualizado correctamente';
                 registroInfo = {
@@ -109,8 +123,8 @@ const processZipFile = async (req, res) => {
                 success: true,
                 message: mensaje,
                 files: {
-                    xml: `${zipFileName}.xml`,
-                    pdf: `${zipFileName}.pdf`
+                    xml: `${cleanBaseName}.xml`,
+                    pdf: `${cleanBaseName}.pdf`
                 },
                 ...(registroInfo && { registro: registroInfo })
             });
@@ -122,8 +136,8 @@ const processZipFile = async (req, res) => {
                 success: true,
                 message: 'Archivos procesados correctamente (no se pudo actualizar el registro en la base de datos)',
                 files: {
-                    xml: `${zipFileName}.xml`,
-                    pdf: `${zipFileName}.pdf`
+                    xml: `${cleanBaseName}.xml`,
+                    pdf: `${cleanBaseName}.pdf`
                 },
                 dbError: dbError.message
             });
