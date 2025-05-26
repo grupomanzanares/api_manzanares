@@ -55,7 +55,7 @@ const emailRecoverPassword = async (data) => {
         subject: 'Reestablece tu Contraseña ',
         text:'Reestablece tu password',
         html: `
-            <p>Hola, ${name}, Has solicitado reestablecer tu contraseña en sistema de Trazabilidad Ganaderìa Manzanares</p>
+            <p>Hola, ${name}, Has solicitado reestablecer tu contraseña en sistema de Gestión Ganadería Manzanares</p>
 
             
             <p>Lo puedes realizar dando click en el siguiente enlace: <a href='${process.env.URL_BACKEND}/auth/reset-password/${token}'>Reestablecer Password </a></p>
