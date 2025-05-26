@@ -1,9 +1,9 @@
-import compraAutorizada from './compraAutorizada.js';
+import matrizAutorizaciones from './matrizAutorizaciones.js';
 
 // Obtener todas las autorizaciones
 export const getAutorizaciones = async (req, res) => {
     try {
-        const autorizaciones = await compraAutorizada.findAll();
+        const autorizaciones = await matrizAutorizaciones.findAll();
         res.json(autorizaciones);
     } catch (error) {
         res.status(500).json({ mensaje: error.message });
@@ -13,7 +13,7 @@ export const getAutorizaciones = async (req, res) => {
 // Obtener una autorización por ID
 export const getAutorizacion = async (req, res) => {
     try {
-        const autorizacion = await compraAutorizada.findByPk(req.params.id);
+        const autorizacion = await matrizAutorizaciones.findByPk(req.params.id);
         if (!autorizacion) {
             return res.status(404).json({ mensaje: 'Autorización no encontrada' });
         }
@@ -26,7 +26,7 @@ export const getAutorizacion = async (req, res) => {
 // Crear una nueva autorización
 export const crearAutorizacion = async (req, res) => {
     try {
-        const nuevaAutorizacion = await compraAutorizada.create(req.body);
+        const nuevaAutorizacion = await matrizAutorizaciones.create(req.body);
         res.status(201).json(nuevaAutorizacion);
     } catch (error) {
         res.status(500).json({ mensaje: error.message });
@@ -36,7 +36,7 @@ export const crearAutorizacion = async (req, res) => {
 // Actualizar una autorización
 export const actualizarAutorizacion = async (req, res) => {
     try {
-        const autorizacion = await compraAutorizada.findByPk(req.params.id);
+        const autorizacion = await matrizAutorizaciones.findByPk(req.params.id);
         if (!autorizacion) {
             return res.status(404).json({ mensaje: 'Autorización no encontrada' });
         }
@@ -50,7 +50,7 @@ export const actualizarAutorizacion = async (req, res) => {
 // Eliminar una autorización
 export const eliminarAutorizacion = async (req, res) => {
     try {
-        const autorizacion = await compraAutorizada.findByPk(req.params.id);
+        const autorizacion = await matrizAutorizaciones.findByPk(req.params.id);
         if (!autorizacion) {
             return res.status(404).json({ mensaje: 'Autorización no encontrada' });
         }

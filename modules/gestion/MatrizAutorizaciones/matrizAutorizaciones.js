@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import db from "../../../config/db.js";
 
-const compraAutorizada = db.define('compras_autorizadas', {
+const matrizAutorizaciones = db.define('matriz_autorizaciones', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -38,4 +38,4 @@ const compraAutorizada = db.define('compras_autorizadas', {
     freezeTableName: true
 });
 
-export default compraAutorizada; 
+export default matrizAutorizaciones; 

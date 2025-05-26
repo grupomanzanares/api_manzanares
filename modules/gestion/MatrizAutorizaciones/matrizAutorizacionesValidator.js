@@ -15,7 +15,6 @@ export const validarCrearAutorizacion = [
         .notEmpty().withMessage('El ID del responsable es obligatorio')
         .isInt().withMessage('El ID del responsable debe ser un número entero'),
     
-   
     body('user')
         .notEmpty().withMessage('El usuario es obligatorio')
         .isString().withMessage('El usuario debe ser texto')
@@ -41,7 +40,6 @@ export const validarActualizarAutorizacion = [
     body('responsableId')
         .optional()
         .isInt().withMessage('El ID del responsable debe ser un número entero'),
-    
     
     body('userMod')
         .notEmpty().withMessage('El usuario modificador es obligatorio')
