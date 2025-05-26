@@ -2,6 +2,7 @@ import User from "../../auth/models/User.js";
 import comprasEstado from "../maestras/ComprasEstado/comprasEstado.js";
 import comprasTipo from "../maestras/ComprasTipo/comprasTipo.js";
 import empresa from "../maestras/Empresa/empresa.js";
+import compraAutorizada from "./CompraAutorizada/compraAutorizada.js";
 import compraReportada from "./CompraReportada/compraReportada.js";
 
 
@@ -24,4 +25,14 @@ compraReportada.belongsTo(empresa, {
   });
 
 
-export { compraReportada, comprasTipo, comprasEstado,User,empresa};
+  User.hasMany(compraAutorizada, { foreignKey: "responsableId" });
+  compraAutorizada.belongsTo(User, { foreignKey: "responsableId", as: "responsable" });
+
+compraAutorizada.belongsTo(empresa, {
+    foreignKey: 'empresa',
+    targetKey: 'nit',
+    as: 'empresaInfo'
+});
+
+
+export { compraReportada, compraAutorizada, empresa, User, comprasEstado, comprasTipo };

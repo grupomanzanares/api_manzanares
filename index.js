@@ -17,6 +17,7 @@ import ccostosRoutes from './modules/maestras/ccosto/ccostoRoutes.js';
 import comprasEstadoRoutes from './modules/maestras/ComprasEstado/comprasEstadoRoutes.js';
 import comprasTipoRoutes from './modules/maestras/ComprasTipo/comprasTipoRoutes.js';
 import compraReportadaRoutes from './modules/gestion/CompraReportada/compraReportadaRoutes.js';
+import compraAutorizadaRoutes from './modules/gestion/CompraAutorizada/compraAutorizadaRoutes.js';
 import registroDianRoutes from './modules/gestion/RegistroDian/registroDianRoutes.js';
 import fileUploadRoutes from './modules/gestion/FileUpload/fileUploadRoutes.js';
 
@@ -57,6 +58,7 @@ app.use('/api_manzanares/ccostos', ccostosRoutes);
 app.use('/api_manzanares/compras_estados', comprasEstadoRoutes);
 app.use('/api_manzanares/compras_tipos', comprasTipoRoutes);
 app.use('/api_manzanares/compras_reportadas', compraReportadaRoutes);
+app.use('/api_manzanares/compras_autorizadas', compraAutorizadaRoutes);
 app.use('/api_manzanares/registros_dian', registroDianRoutes);
 app.use('/api_manzanares/files', fileUploadRoutes);
 
