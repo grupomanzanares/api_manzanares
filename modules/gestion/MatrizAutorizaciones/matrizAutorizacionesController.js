@@ -1,4 +1,5 @@
 import matrizAutorizaciones from './matrizAutorizaciones.js';
+import { User } from '../gestionRelations.js';
 
 // Obtener todas las autorizaciones
 export const getAutorizaciones = async (req, res) => {
@@ -58,5 +59,52 @@ export const eliminarAutorizacion = async (req, res) => {
         res.json({ mensaje: 'Autorización eliminada correctamente' });
     } catch (error) {
         res.status(500).json({ mensaje: error.message });
+    }
+};
+
+// Obtener el responsable para una empresa y emisor específicos
+export const getResponsableAutorizacion = async (req, res) => {
+    try {
+        const { empresa, emisor } = req.query;
+
+        if (!empresa || !emisor) {
+            return res.status(400).json({ 
+                mensaje: 'Se requieren los parámetros empresa y emisor' 
+            });
+        }
+
+        const autorizacion = await matrizAutorizaciones.findOne({
+            where: {
+                empresa,
+                emisor
+            },
+            include: [{
+                model: User,
+                as: 'responsable',
+                attributes: ['id', 'name', 'email', 'celphone']
+            }]
+        });
+
+        if (!autorizacion) {
+            return res.status(404).json({ 
+                mensaje: 'No se encontró un responsable asignado para esta combinación de empresa y emisor',
+                empresa,
+                emisor
+            });
+        }
+
+        res.json({
+            empresa: autorizacion.empresa,
+            emisor: autorizacion.emisor,
+            responsable: autorizacion.responsable,
+            fechaAutorizacion: autorizacion.fechaAutorizacion
+        });
+
+    } catch (error) {
+        console.error('Error al buscar responsable:', error);
+        res.status(500).json({ 
+            mensaje: 'Error al buscar el responsable',
+            error: error.message 
+        });
     }
 }; 
