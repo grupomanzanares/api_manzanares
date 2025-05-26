@@ -319,54 +319,12 @@ const bulkUpsertComprasReportadas = async (req, res) => {
             if (existente) {
                 console.log(`Item ${i + 1}: estadoId =`, existente.estadoId);
                 if (existente.estadoId === 1) {
-                    // Solo buscar responsable en matriz_autorizaciones si el registro existente no tiene responsable
-                    if (!existente.responsableId) {
-                        const autorizacion = await matrizAutorizaciones.findOne({
-                            where: {
-                                empresa: empresa,
-                                emisor: emisor
-                            },
-                            include: [{
-                                model: User,
-                                as: 'responsable',
-                                attributes: ['id', 'email', 'name']
-                            }]
-                        });
-
-                        // Si se encuentra un responsable, asignarlo al item
-                        if (autorizacion && autorizacion.responsable) {
-                            item.responsableId = autorizacion.responsable.id;
-                            item.estadoId = 2; // Estado por autorizar
-                        }
-                    }
-
+     
                     console.log(`Item ${i + 1}: Actualizando...`);
                     await existente.update(item);
                     resultados.actualizados.push({ emisor, numero });
 
-                    // Si se asignó un responsable, enviar correo
-                    if (item.responsableId && item.estadoId === 2) {
-                        const [usuarioModifico, usuarioResponsable] = await Promise.all([
-                            User.findOne({ where: { identificacion: item.userMod }, attributes: ['email', 'name'] }),
-                            User.findByPk(item.responsableId, { attributes: ['email', 'name'] })
-                        ]);
-
-                        if (usuarioModifico && usuarioResponsable) {
-                            emailNotAutorizacion({
-                                tipo: item.tipo,
-                                numero: item.numero,
-                                valor: item.valor,
-                                cufe: item.cufe,
-                                urlpdf: item.urlPdf,
-                                responsableId: item.responsableId,
-                                userMod: item.userMod,
-                                correoSolicitante: usuarioModifico.email,
-                                nombreSolicitante: usuarioModifico.name,
-                                correoResponsable: usuarioResponsable.email,
-                                nombreResponsable: usuarioResponsable.name
-                            });
-                        }
-                    }
+      
 
                     console.log(`Item ${i + 1}: Actualizado con éxito`);
                 } else {
