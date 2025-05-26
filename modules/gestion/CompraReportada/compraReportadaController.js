@@ -285,28 +285,43 @@ const bulkUpsertComprasReportadas = async (req, res) => {
             console.log(`Procesando item ${i + 1}/${registros.length}:`, item);
 
             // Validación de campos requeridos
-            const { emisor, numero } = item;
-            if (!emisor || !numero) {
+            const { emisor, numero, empresa } = item;
+            if (!emisor || !numero || !empresa) {
                 console.log(`Error en item ${i + 1}: Faltan campos obligatorios`);
                 resultados.errores.push({
                     item,
-                    error: 'Faltan campos obligatorios: emisor o numero'
+                    error: 'Faltan campos obligatorios: emisor, numero o empresa'
                 });
                 continue;
             }
 
-            // Agregar la URL del PDF basada en emisor y numero....
+            // Buscar responsable en matriz_autorizaciones
+            const autorizacion = await matrizAutorizaciones.findOne({
+                where: {
+                    empresa: empresa,
+                    emisor: emisor
+                },
+                include: [{
+                    model: User,
+                    as: 'responsable',
+                    attributes: ['id', 'email', 'name']
+                }]
+            });
+
+            // Si se encuentra un responsable, asignarlo al item
+            if (autorizacion && autorizacion.responsable) {
+                item.responsableId = autorizacion.responsable.id;
+                item.estadoId = 2; // Estado por autorizar
+            }
+
+            // Agregar la URL del PDF basada en emisor y numero
             item.urlPdf = `/uploads/${emisor}${numero}.pdf`;
 
             // Formatear el valor decimal correctamente
             if (item.valor) {
-                // Eliminar todos los puntos de los separadores de miles y reemplazar la coma por punto si es necesario
                 item.valor = item.valor.toString().replace(/\./g, '').replace(',', '.');
-
-                // Convertir a número para asegurarse de que es un valor numérico válido
                 item.valor = parseFloat(item.valor);
 
-                // Verificar si es un número válido
                 if (isNaN(item.valor)) {
                     resultados.errores.push({
                         item,
@@ -326,10 +341,34 @@ const bulkUpsertComprasReportadas = async (req, res) => {
             if (existente) {
                 console.log(`Item ${i + 1}: estadoId =`, existente.estadoId);
                 if (existente.estadoId === 1) {
-                    // Asegurarse de que todos los campos necesarios estén en item
                     console.log(`Item ${i + 1}: Actualizando...`);
                     await existente.update(item);
                     resultados.actualizados.push({ emisor, numero });
+
+                    // Si se asignó un responsable, enviar correo
+                    if (item.responsableId && item.estadoId === 2) {
+                        const [usuarioModifico, usuarioResponsable] = await Promise.all([
+                            User.findOne({ where: { identificacion: item.userMod }, attributes: ['email', 'name'] }),
+                            User.findByPk(item.responsableId, { attributes: ['email', 'name'] })
+                        ]);
+
+                        if (usuarioModifico && usuarioResponsable) {
+                            emailNotAutorizacion({
+                                tipo: item.tipo,
+                                numero: item.numero,
+                                valor: item.valor,
+                                cufe: item.cufe,
+                                urlpdf: item.urlPdf,
+                                responsableId: item.responsableId,
+                                userMod: item.userMod,
+                                correoSolicitante: usuarioModifico.email,
+                                nombreSolicitante: usuarioModifico.name,
+                                correoResponsable: usuarioResponsable.email,
+                                nombreResponsable: usuarioResponsable.name
+                            });
+                        }
+                    }
+
                     console.log(`Item ${i + 1}: Actualizado con éxito`);
                 } else {
                     console.log(`Item ${i + 1}: No actualizable por estadoId`);
@@ -340,12 +379,35 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                     });
                 }
             } else {
-                // Garantizar que todos los campos requeridos del modelo estén presentes
                 console.log(`Item ${i + 1}: Creando nuevo registro...`);
                 try {
                     const nuevoRegistro = await compraReportada.create(item);
                     console.log(`Item ${i + 1}: Creado con éxito, ID:`, nuevoRegistro.id);
                     resultados.creados.push({ emisor, numero, id: nuevoRegistro.id });
+
+                    // Si se asignó un responsable, enviar correo
+                    if (item.responsableId && item.estadoId === 2) {
+                        const [usuarioModifico, usuarioResponsable] = await Promise.all([
+                            User.findOne({ where: { identificacion: item.userMod }, attributes: ['email', 'name'] }),
+                            User.findByPk(item.responsableId, { attributes: ['email', 'name'] })
+                        ]);
+
+                        if (usuarioModifico && usuarioResponsable) {
+                            emailNotAutorizacion({
+                                tipo: item.tipo,
+                                numero: item.numero,
+                                valor: item.valor,
+                                cufe: item.cufe,
+                                urlpdf: item.urlPdf,
+                                responsableId: item.responsableId,
+                                userMod: item.userMod,
+                                correoSolicitante: usuarioModifico.email,
+                                nombreSolicitante: usuarioModifico.name,
+                                correoResponsable: usuarioResponsable.email,
+                                nombreResponsable: usuarioResponsable.name
+                            });
+                        }
+                    }
                 } catch (creationError) {
                     console.error(`Item ${i + 1}: Error al crear:`, creationError);
                     resultados.errores.push({
