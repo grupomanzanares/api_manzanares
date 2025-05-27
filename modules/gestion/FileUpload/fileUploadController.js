@@ -237,7 +237,7 @@ const processZipFile = async (req, res) => {
         }
 
         // Eliminar el archivo ZIP original
-        await fs.promises.unlink(zipFilePath);
+        //await fs.promises.unlink(zipFilePath);
 
         // Intentar buscar y actualizar en compraReportada
         try {
