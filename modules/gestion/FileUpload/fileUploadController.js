@@ -168,6 +168,7 @@ export const uploadZipFile = async (req, res) => {
 const processZipFile = async (req, res) => {
     try {
         const zipFilePath = req.file.path;
+        // Obtener el nombre del ZIP sin la extensión
         const zipFileName = path.basename(zipFilePath, '.zip');
         const uploadDir = path.dirname(zipFilePath);
 
@@ -197,18 +198,15 @@ const processZipFile = async (req, res) => {
         }
 
         // Extraer y procesar los archivos
-        let cleanBaseName = null;
         let invoiceData = null;
         let processingErrors = [];
 
+        // Procesar cada archivo del ZIP
         for (const entry of zipEntries) {
             try {
                 const ext = path.extname(entry.entryName).toLowerCase();
-                let baseName = path.basename(entry.entryName, ext);
-                baseName = cleanFileName(baseName);
-                if (!cleanBaseName) cleanBaseName = baseName;
-
-                const newFileName = `${baseName}${ext}`;
+                // Usar el nombre del ZIP como base para todos los archivos
+                const newFileName = `${zipFileName}${ext}`;
                 const newFilePath = path.join(uploadDir, newFileName);
 
                 // Extraer el archivo
@@ -222,8 +220,8 @@ const processZipFile = async (req, res) => {
                         const xmlJson = xmlToJson(xmlContent);
                         invoiceData = extractInvoiceInfo(xmlJson);
                         
-                        // Guardar el JSON como archivo
-                        const jsonFilePath = path.join(uploadDir, `${baseName}.json`);
+                        // Guardar el JSON usando el mismo nombre base
+                        const jsonFilePath = path.join(uploadDir, `${zipFileName}.json`);
                         await fs.promises.writeFile(jsonFilePath, JSON.stringify(invoiceData, null, 2));
                     } catch (xmlError) {
                         console.error('Error procesando XML:', xmlError);
@@ -249,7 +247,7 @@ const processZipFile = async (req, res) => {
                                 db.col('emisor'), 
                                 db.col('numero')
                             ),
-                            cleanBaseName
+                            zipFileName
                         )
                     ]
                 }
@@ -260,9 +258,9 @@ const processZipFile = async (req, res) => {
 
             if (registro) {
                 await registro.update({
-                    urlPdf: `/uploads/${cleanBaseName}.pdf`,
-                    urlXml: `/uploads/${cleanBaseName}.xml`,
-                    urlJson: `/uploads/${cleanBaseName}.json`
+                    urlPdf: `/uploads/${zipFileName}.pdf`,
+                    urlXml: `/uploads/${zipFileName}.xml`,
+                    urlJson: `/uploads/${zipFileName}.json`
                 });
                 mensaje = 'Archivos procesados y registro actualizado correctamente';
                 registroInfo = {
@@ -276,9 +274,9 @@ const processZipFile = async (req, res) => {
                 success: true,
                 message: mensaje,
                 files: {
-                    xml: `${cleanBaseName}.xml`,
-                    pdf: `${cleanBaseName}.pdf`,
-                    json: `${cleanBaseName}.json`
+                    xml: `${zipFileName}.xml`,
+                    pdf: `${zipFileName}.pdf`,
+                    json: `${zipFileName}.json`
                 },
                 invoiceData,
                 processingErrors: processingErrors.length > 0 ? processingErrors : undefined,
@@ -291,9 +289,9 @@ const processZipFile = async (req, res) => {
                 success: true,
                 message: 'Archivos procesados correctamente (no se pudo actualizar el registro en la base de datos)',
                 files: {
-                    xml: `${cleanBaseName}.xml`,
-                    pdf: `${cleanBaseName}.pdf`,
-                    json: `${cleanBaseName}.json`
+                    xml: `${zipFileName}.xml`,
+                    pdf: `${zipFileName}.pdf`,
+                    json: `${zipFileName}.json`
                 },
                 invoiceData,
                 processingErrors: processingErrors.length > 0 ? processingErrors : undefined,
