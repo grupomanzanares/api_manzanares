@@ -37,34 +37,109 @@ function xmlToJson(xmlContent) {
 // Función para extraer información relevante del XML
 function extractInvoiceInfo(xmlJson) {
     try {
+        // Verificar si tenemos un AttachedDocument
+        if (!xmlJson.AttachedDocument) {
+            // Si no es AttachedDocument, intentar procesar como Invoice directa
+            return extractInvoiceData(xmlJson);
+        }
+
         const invoice = xmlJson.AttachedDocument;
-        const embeddedInvoice = invoice.Attachment.ExternalReference.Description.__cdata;
-        const invoiceJson = xmlToJson(embeddedInvoice);
         
-        return {
-            numeroFactura: invoiceJson.Invoice.cbc.ID,
-            fechaEmision: invoiceJson.Invoice.cbc.IssueDate,
-            horaEmision: invoiceJson.Invoice.cbc.IssueTime,
-            valorTotal: invoiceJson.Invoice.cac.LegalMonetaryTotal.cbc.PayableAmount,
-            emisor: {
-                nit: invoiceJson.Invoice.cac.AccountingSupplierParty.cac.Party.cac.PartyTaxScheme.cbc.CompanyID,
-                nombre: invoiceJson.Invoice.cac.AccountingSupplierParty.cac.Party.cac.PartyTaxScheme.cbc.RegistrationName
-            },
-            receptor: {
-                nit: invoiceJson.Invoice.cac.AccountingCustomerParty.cac.Party.cac.PartyTaxScheme.cbc.CompanyID,
-                nombre: invoiceJson.Invoice.cac.AccountingCustomerParty.cac.Party.cac.PartyTaxScheme.cbc.RegistrationName
-            },
-            items: invoiceJson.Invoice.cac.InvoiceLine.map(line => ({
-                id: line.cbc.ID,
-                descripcion: line.cac.Item.cbc.Description,
-                cantidad: line.cbc.InvoicedQuantity,
-                valorUnitario: line.cac.Price.cbc.PriceAmount,
-                valorTotal: line.cbc.LineExtensionAmount
-            }))
-        };
+        // Verificar si tenemos el documento embebido
+        if (invoice.Attachment?.ExternalReference?.Description?.__cdata) {
+            const embeddedInvoice = invoice.Attachment.ExternalReference.Description.__cdata;
+            const invoiceJson = xmlToJson(embeddedInvoice);
+            return extractInvoiceData(invoiceJson);
+        }
+
+        // Si no hay documento embebido, intentar procesar el AttachedDocument directamente
+        return extractInvoiceData(invoice);
     } catch (error) {
         console.error('Error al extraer información de la factura:', error);
-        throw new Error('Error al procesar la información de la factura');
+        // En lugar de lanzar error, devolver un objeto con información básica
+        return {
+            error: 'Error al procesar la información de la factura',
+            rawData: xmlJson // Incluir los datos crudos para debugging
+        };
+    }
+}
+
+// Función para extraer datos de la factura
+function extractInvoiceData(data) {
+    try {
+        // Intentar obtener los datos básicos de la factura
+        const invoice = data.Invoice || data;
+        
+        // Crear objeto base con valores por defecto
+        const result = {
+            numeroFactura: 'No disponible',
+            fechaEmision: 'No disponible',
+            horaEmision: 'No disponible',
+            valorTotal: '0.00',
+            emisor: {
+                nit: 'No disponible',
+                nombre: 'No disponible'
+            },
+            receptor: {
+                nit: 'No disponible',
+                nombre: 'No disponible'
+            },
+            items: []
+        };
+
+        // Intentar extraer cada campo de forma segura
+        try {
+            result.numeroFactura = invoice.cbc?.ID || 'No disponible';
+            result.fechaEmision = invoice.cbc?.IssueDate || 'No disponible';
+            result.horaEmision = invoice.cbc?.IssueTime || 'No disponible';
+            result.valorTotal = invoice.cac?.LegalMonetaryTotal?.cbc?.PayableAmount || '0.00';
+        } catch (e) {
+            console.warn('Error al extraer datos básicos:', e);
+        }
+
+        // Intentar extraer datos del emisor
+        try {
+            const emisor = invoice.cac?.AccountingSupplierParty?.cac?.Party?.cac?.PartyTaxScheme?.cbc;
+            if (emisor) {
+                result.emisor.nit = emisor.CompanyID || 'No disponible';
+                result.emisor.nombre = emisor.RegistrationName || 'No disponible';
+            }
+        } catch (e) {
+            console.warn('Error al extraer datos del emisor:', e);
+        }
+
+        // Intentar extraer datos del receptor
+        try {
+            const receptor = invoice.cac?.AccountingCustomerParty?.cac?.Party?.cac?.PartyTaxScheme?.cbc;
+            if (receptor) {
+                result.receptor.nit = receptor.CompanyID || 'No disponible';
+                result.receptor.nombre = receptor.RegistrationName || 'No disponible';
+            }
+        } catch (e) {
+            console.warn('Error al extraer datos del receptor:', e);
+        }
+
+        // Intentar extraer items
+        try {
+            const items = invoice.cac?.InvoiceLine || [];
+            result.items = items.map(line => ({
+                id: line.cbc?.ID || 'No disponible',
+                descripcion: line.cac?.Item?.cbc?.Description || 'No disponible',
+                cantidad: line.cbc?.InvoicedQuantity || '0',
+                valorUnitario: line.cac?.Price?.cbc?.PriceAmount || '0.00',
+                valorTotal: line.cbc?.LineExtensionAmount || '0.00'
+            }));
+        } catch (e) {
+            console.warn('Error al extraer items:', e);
+        }
+
+        return result;
+    } catch (error) {
+        console.error('Error al procesar datos de la factura:', error);
+        return {
+            error: 'Error al procesar datos de la factura',
+            rawData: data
+        };
     }
 }
 
@@ -124,29 +199,40 @@ const processZipFile = async (req, res) => {
         // Extraer y procesar los archivos
         let cleanBaseName = null;
         let invoiceData = null;
+        let processingErrors = [];
 
         for (const entry of zipEntries) {
-            const ext = path.extname(entry.entryName).toLowerCase();
-            let baseName = path.basename(entry.entryName, ext);
-            baseName = cleanFileName(baseName);
-            if (!cleanBaseName) cleanBaseName = baseName;
+            try {
+                const ext = path.extname(entry.entryName).toLowerCase();
+                let baseName = path.basename(entry.entryName, ext);
+                baseName = cleanFileName(baseName);
+                if (!cleanBaseName) cleanBaseName = baseName;
 
-            const newFileName = `${baseName}${ext}`;
-            const newFilePath = path.join(uploadDir, newFileName);
+                const newFileName = `${baseName}${ext}`;
+                const newFilePath = path.join(uploadDir, newFileName);
 
-            // Extraer el archivo
-            const extractedData = entry.getData();
-            await fs.promises.writeFile(newFilePath, extractedData);
+                // Extraer el archivo
+                const extractedData = entry.getData();
+                await fs.promises.writeFile(newFilePath, extractedData);
 
-            // Si es XML, procesarlo y crear el JSON
-            if (ext === '.xml') {
-                const xmlContent = extractedData.toString('utf8');
-                const xmlJson = xmlToJson(xmlContent);
-                invoiceData = extractInvoiceInfo(xmlJson);
-                
-                // Guardar el JSON como archivo
-                const jsonFilePath = path.join(uploadDir, `${baseName}.json`);
-                await fs.promises.writeFile(jsonFilePath, JSON.stringify(invoiceData, null, 2));
+                // Si es XML, procesarlo y crear el JSON
+                if (ext === '.xml') {
+                    try {
+                        const xmlContent = extractedData.toString('utf8');
+                        const xmlJson = xmlToJson(xmlContent);
+                        invoiceData = extractInvoiceInfo(xmlJson);
+                        
+                        // Guardar el JSON como archivo
+                        const jsonFilePath = path.join(uploadDir, `${baseName}.json`);
+                        await fs.promises.writeFile(jsonFilePath, JSON.stringify(invoiceData, null, 2));
+                    } catch (xmlError) {
+                        console.error('Error procesando XML:', xmlError);
+                        processingErrors.push(`Error procesando XML: ${xmlError.message}`);
+                    }
+                }
+            } catch (entryError) {
+                console.error('Error procesando entrada:', entryError);
+                processingErrors.push(`Error procesando archivo ${entry.entryName}: ${entryError.message}`);
             }
         }
 
@@ -195,6 +281,7 @@ const processZipFile = async (req, res) => {
                     json: `${cleanBaseName}.json`
                 },
                 invoiceData,
+                processingErrors: processingErrors.length > 0 ? processingErrors : undefined,
                 ...(registroInfo && { registro: registroInfo })
             });
 
@@ -209,6 +296,7 @@ const processZipFile = async (req, res) => {
                     json: `${cleanBaseName}.json`
                 },
                 invoiceData,
+                processingErrors: processingErrors.length > 0 ? processingErrors : undefined,
                 dbError: dbError.message
             });
         }
