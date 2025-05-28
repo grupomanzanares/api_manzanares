@@ -46,10 +46,10 @@ function extractInvoiceInfo(xmlJson) {
         const invoice = xmlJson.AttachedDocument;
         
         // Verificar si tenemos el documento embebido
-        if (invoice.Attachment?.ExternalReference?.Description?.__cdata) {
-            const embeddedInvoice = invoice.Attachment.ExternalReference.Description.__cdata;
-            const invoiceJson = xmlToJson(embeddedInvoice);
-            return extractInvoiceData(invoiceJson);
+        const embedded = invoice.Attachment?.ExternalReference?.Description?.__cdata;
+        if (embedded) {
+            const embeddedJson = xmlToJson(embedded);
+            return extractInvoiceData(embeddedJson);
         }
 
         // Si no hay documento embebido, intentar procesar el AttachedDocument directamente
@@ -65,7 +65,7 @@ function extractInvoiceInfo(xmlJson) {
 }
 
 // Función para extraer datos de la factura
-function extractInvoiceData(data) {
+function extractInvoiceData_old(data) {
     try {
         // Intentar obtener los datos básicos de la factura
         const invoice = data.Invoice || data;
@@ -140,6 +140,40 @@ function extractInvoiceData(data) {
             error: 'Error al procesar datos de la factura',
             rawData: data
         };
+    }
+}
+
+
+
+function extractInvoiceData(data) {
+    try {
+        const invoice = data.Invoice || data;
+        const result = {
+            numeroFactura: invoice?.ID || 'No disponible',
+            fechaEmision: invoice?.IssueDate || 'No disponible',
+            horaEmision: invoice?.IssueTime || 'No disponible',
+            valorTotal: invoice?.LegalMonetaryTotal?.PayableAmount || '0.00',
+            emisor: {
+                nit: invoice?.AccountingSupplierParty?.Party?.PartyTaxScheme?.CompanyID || 'No disponible',
+                nombre: invoice?.AccountingSupplierParty?.Party?.PartyTaxScheme?.RegistrationName || 'No disponible'
+            },
+            receptor: {
+                nit: invoice?.AccountingCustomerParty?.Party?.PartyTaxScheme?.CompanyID || 'No disponible',
+                nombre: invoice?.AccountingCustomerParty?.Party?.PartyTaxScheme?.RegistrationName || 'No disponible'
+            },
+            items: (Array.isArray(invoice?.InvoiceLine) ? invoice.InvoiceLine : [invoice.InvoiceLine || []]).map(line => ({
+                id: line?.ID || 'No disponible',
+                descripcion: line?.Item?.Description || 'No disponible',
+                cantidad: line?.InvoicedQuantity || '0',
+                valorUnitario: line?.Price?.PriceAmount || '0.00',
+                valorTotal: line?.LineExtensionAmount || '0.00'
+            }))
+        };
+
+        return result;
+    } catch (error) {
+        console.error('Error procesando datos de la factura:', error);
+        return { error: 'Error general al procesar datos', rawData: data };
     }
 }
 
@@ -225,7 +259,7 @@ const processZipFile = async (req, res) => {
                         await fs.promises.writeFile(jsonFilePath, JSON.stringify(invoiceData, null, 2));
                     } catch (xmlError) {
                         console.error('Error procesando XML:', xmlError);
-                        processingErrors.push(`Error procesando XML: ${xmlError.message}`);
+                        processingErrors.push(`Error procesando XML: ${entry.entryName}: ${xmlError.message}`);
                     }
                 }
             } catch (entryError) {
