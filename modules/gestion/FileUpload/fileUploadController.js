@@ -77,7 +77,7 @@ function extractInvoiceInfo(xmlJson) {
 function extractInvoiceData(data) {
     try {
         const invoice = data.Invoice || data;
-       //console.log('DEBUG INVOICE JSON:', JSON.stringify(invoice, null, 2));
+        console.log('DEBUG INVOICE JSON:', JSON.stringify(invoice, null, 2));
         console.log('DEBUG INVOICE ITEMS:', JSON.stringify(invoice["cac:InvoiceLine"], null, 2));
 
         const result = {
