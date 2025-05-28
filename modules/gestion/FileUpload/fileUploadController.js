@@ -52,7 +52,13 @@ function extractInvoiceInfo(xmlJson) {
                 // Extraer el XML del CDATA
                 const xmlContent = embedded.replace(/^<\?xml[^>]*\?>/, '').trim();
                 const embeddedJson = xmlToJson(xmlContent);
-                return extractInvoiceData(embeddedJson);
+                console.log('DEBUG EMBEDDED JSON:', JSON.stringify(embeddedJson, null, 2));
+                // Si el objeto tiene la propiedad Invoice, procesar esa
+                if (embeddedJson.Invoice) {
+                    return extractInvoiceData(embeddedJson.Invoice);
+                } else {
+                    return extractInvoiceData(embeddedJson);
+                }
             } catch (error) {
                 console.error('Error procesando XML embebido:', error);
                 return {
