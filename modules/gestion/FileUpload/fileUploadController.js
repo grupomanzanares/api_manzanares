@@ -37,39 +37,43 @@ function xmlToJson(xmlContent) {
 // Función para extraer información relevante del XML
 function extractInvoiceInfo(xmlJson) {
     try {
-        // Verificar si tenemos un AttachedDocument
-        if (!xmlJson.AttachedDocument) {
-            // Si no es AttachedDocument, intentar procesar como Invoice directa
-            return extractInvoiceData(xmlJson);
-        }
+        // Si es AttachedDocument
+        if (xmlJson.AttachedDocument) {
+            const invoice = xmlJson.AttachedDocument;
 
-        const invoice = xmlJson.AttachedDocument;
-        
-        // Verificar si tenemos el documento embebido en CDATA
-        const embedded = invoice.Attachment?.ExternalReference?.Description?.__cdata;
-        if (embedded) {
-            try {
-                // Extraer el XML del CDATA
+            // 1. CDATA (ya lo tienes)
+            const embedded = invoice.Attachment?.ExternalReference?.Description?.__cdata;
+            if (embedded) {
                 const xmlContent = embedded.replace(/^<\?xml[^>]*\?>/, '').trim();
                 const embeddedJson = xmlToJson(xmlContent);
                 console.log('DEBUG EMBEDDED JSON:', JSON.stringify(embeddedJson, null, 2));
-                // Si el objeto tiene la propiedad Invoice, procesar esa
                 if (embeddedJson.Invoice) {
                     return extractInvoiceData(embeddedJson.Invoice);
                 } else {
                     return extractInvoiceData(embeddedJson);
                 }
-            } catch (error) {
-                console.error('Error procesando XML embebido:', error);
-                return {
-                    error: 'Error al procesar el XML embebido',
-                    rawData: embedded
-                };
             }
+
+            // 2. O puede estar como string en cbc:Description
+            const desc = invoice["cac:Attachment"]?.["cac:ExternalReference"]?.["cbc:Description"];
+            if (desc && typeof desc === "string" && desc.includes("<Invoice")) {
+                const xmlContent = desc.replace(/^<\?xml[^>]*\?>/, '').trim();
+                const embeddedJson = xmlToJson(xmlContent);
+                console.log('DEBUG EMBEDDED JSON (string):', JSON.stringify(embeddedJson, null, 2));
+                if (embeddedJson.Invoice) {
+                    return extractInvoiceData(embeddedJson.Invoice);
+                } else {
+                    return extractInvoiceData(embeddedJson);
+                }
+            }
+
+            // Si no, procesar el AttachedDocument directamente
+            return extractInvoiceData(invoice);
         }
 
-        // Si no hay documento embebido, intentar procesar el AttachedDocument directamente
-        return extractInvoiceData(invoice);
+        // Si no es AttachedDocument, intentar procesar como Invoice directa
+        return extractInvoiceData(xmlJson);
+
     } catch (error) {
         console.error('Error al extraer información de la factura:', error);
         return {
