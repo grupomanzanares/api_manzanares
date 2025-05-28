@@ -76,80 +76,41 @@ function extractInvoiceInfo(xmlJson) {
 // Función para extraer datos de la factura
 function extractInvoiceData(data) {
     try {
-        // Intentar obtener los datos básicos de la factura
         const invoice = data.Invoice || data;
-        console.log('DEBUG INVOICE JSON:', JSON.stringify(invoice, null, 2)); 
-        
-        // Crear objeto base con valores por defecto
+        console.log('DEBUG INVOICE JSON:', JSON.stringify(invoice, null, 2));
+
         const result = {
-            numeroFactura: 'No disponible',
-            fechaEmision: 'No disponible',
-            horaEmision: 'No disponible',
-            valorTotal: '0.00',
+            numeroFactura: invoice["cbc:ID"] || 'No disponible',
+            fechaEmision: invoice["cbc:IssueDate"] || 'No disponible',
+            horaEmision: invoice["cbc:IssueTime"] || 'No disponible',
+            valorTotal: invoice["cac:LegalMonetaryTotal"]?.["cbc:PayableAmount"] || '0.00',
             emisor: {
-                nit: 'No disponible',
-                nombre: 'No disponible'
+                nit: invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"]?.["#text"] || invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"] || 'No disponible',
+                nombre: invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:RegistrationName"] || 'No disponible'
             },
             receptor: {
-                nit: 'No disponible',
-                nombre: 'No disponible'
+                nit: invoice["cac:ReceiverParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"]?.["#text"] || invoice["cac:ReceiverParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"] || 'No disponible',
+                nombre: invoice["cac:ReceiverParty"]?.["cac:PartyTaxScheme"]?.["cbc:RegistrationName"] || 'No disponible'
             },
             items: []
         };
 
-        // Intentar extraer cada campo de forma segura
-        try {
-            result.numeroFactura = invoice.cbc?.ID || 'No disponible';
-            result.fechaEmision = invoice.cbc?.IssueDate || 'No disponible';
-            result.horaEmision = invoice.cbc?.IssueTime || 'No disponible';
-            result.valorTotal = invoice.cac?.LegalMonetaryTotal?.cbc?.PayableAmount || '0.00';
-        } catch (e) {
-            console.warn('Error al extraer datos básicos:', e);
-        }
-
-        // Intentar extraer datos del emisor
-        try {
-            const emisor = invoice.cac?.AccountingSupplierParty?.cac?.Party?.cac?.PartyTaxScheme?.cbc;
-            if (emisor) {
-                result.emisor.nit = emisor.CompanyID || 'No disponible';
-                result.emisor.nombre = emisor.RegistrationName || 'No disponible';
-            }
-        } catch (e) {
-            console.warn('Error al extraer datos del emisor:', e);
-        }
-
-        // Intentar extraer datos del receptor
-        try {
-            const receptor = invoice.cac?.AccountingCustomerParty?.cac?.Party?.cac?.PartyTaxScheme?.cbc;
-            if (receptor) {
-                result.receptor.nit = receptor.CompanyID || 'No disponible';
-                result.receptor.nombre = receptor.RegistrationName || 'No disponible';
-            }
-        } catch (e) {
-            console.warn('Error al extraer datos del receptor:', e);
-        }
-
-        // Intentar extraer items
-        try {
-            const items = invoice.cac?.InvoiceLine || [];
-            result.items = items.map(line => ({
-                id: line.cbc?.ID || 'No disponible',
-                descripcion: line.cac?.Item?.cbc?.Description || 'No disponible',
-                cantidad: line.cbc?.InvoicedQuantity || '0',
-                valorUnitario: line.cac?.Price?.cbc?.PriceAmount || '0.00',
-                valorTotal: line.cbc?.LineExtensionAmount || '0.00'
+        // Items (si existen)
+        if (invoice["cac:InvoiceLine"]) {
+            const lines = Array.isArray(invoice["cac:InvoiceLine"]) ? invoice["cac:InvoiceLine"] : [invoice["cac:InvoiceLine"]];
+            result.items = lines.map(line => ({
+                id: line["cbc:ID"] || 'No disponible',
+                descripcion: line["cac:Item"]?.["cbc:Description"] || 'No disponible',
+                cantidad: line["cbc:InvoicedQuantity"] || '0',
+                valorUnitario: line["cac:Price"]?.["cbc:PriceAmount"] || '0.00',
+                valorTotal: line["cbc:LineExtensionAmount"] || '0.00'
             }));
-        } catch (e) {
-            console.warn('Error al extraer items:', e);
         }
 
         return result;
     } catch (error) {
-        console.error('Error al procesar datos de la factura:', error);
-        return {
-            error: 'Error al procesar datos de la factura',
-            rawData: data
-        };
+        console.error('Error procesando datos de la factura:', error);
+        return { error: 'Error general al procesar datos', rawData: data };
     }
 }
 
