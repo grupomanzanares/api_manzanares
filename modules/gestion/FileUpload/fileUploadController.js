@@ -45,27 +45,36 @@ function extractInvoiceInfo(xmlJson) {
 
         const invoice = xmlJson.AttachedDocument;
         
-        // Verificar si tenemos el documento embebido
+        // Verificar si tenemos el documento embebido en CDATA
         const embedded = invoice.Attachment?.ExternalReference?.Description?.__cdata;
         if (embedded) {
-            const embeddedJson = xmlToJson(embedded);
-            return extractInvoiceData(embeddedJson);
+            try {
+                // Extraer el XML del CDATA
+                const xmlContent = embedded.replace(/^<\?xml[^>]*\?>/, '').trim();
+                const embeddedJson = xmlToJson(xmlContent);
+                return extractInvoiceData(embeddedJson);
+            } catch (error) {
+                console.error('Error procesando XML embebido:', error);
+                return {
+                    error: 'Error al procesar el XML embebido',
+                    rawData: embedded
+                };
+            }
         }
 
         // Si no hay documento embebido, intentar procesar el AttachedDocument directamente
         return extractInvoiceData(invoice);
     } catch (error) {
         console.error('Error al extraer información de la factura:', error);
-        // En lugar de lanzar error, devolver un objeto con información básica
         return {
             error: 'Error al procesar la información de la factura',
-            rawData: xmlJson // Incluir los datos crudos para debugging
+            rawData: xmlJson
         };
     }
 }
 
 // Función para extraer datos de la factura
-function extractInvoiceData_old(data) {
+function extractInvoiceData(data) {
     try {
         // Intentar obtener los datos básicos de la factura
         const invoice = data.Invoice || data;
@@ -140,40 +149,6 @@ function extractInvoiceData_old(data) {
             error: 'Error al procesar datos de la factura',
             rawData: data
         };
-    }
-}
-
-
-
-function extractInvoiceData(data) {
-    try {
-        const invoice = data.Invoice || data;
-        const result = {
-            numeroFactura: invoice?.ID || 'No disponible',
-            fechaEmision: invoice?.IssueDate || 'No disponible',
-            horaEmision: invoice?.IssueTime || 'No disponible',
-            valorTotal: invoice?.LegalMonetaryTotal?.PayableAmount || '0.00',
-            emisor: {
-                nit: invoice?.AccountingSupplierParty?.Party?.PartyTaxScheme?.CompanyID || 'No disponible',
-                nombre: invoice?.AccountingSupplierParty?.Party?.PartyTaxScheme?.RegistrationName || 'No disponible'
-            },
-            receptor: {
-                nit: invoice?.AccountingCustomerParty?.Party?.PartyTaxScheme?.CompanyID || 'No disponible',
-                nombre: invoice?.AccountingCustomerParty?.Party?.PartyTaxScheme?.RegistrationName || 'No disponible'
-            },
-            items: (Array.isArray(invoice?.InvoiceLine) ? invoice.InvoiceLine : [invoice.InvoiceLine || []]).map(line => ({
-                id: line?.ID || 'No disponible',
-                descripcion: line?.Item?.Description || 'No disponible',
-                cantidad: line?.InvoicedQuantity || '0',
-                valorUnitario: line?.Price?.PriceAmount || '0.00',
-                valorTotal: line?.LineExtensionAmount || '0.00'
-            }))
-        };
-
-        return result;
-    } catch (error) {
-        console.error('Error procesando datos de la factura:', error);
-        return { error: 'Error general al procesar datos', rawData: data };
     }
 }
 
