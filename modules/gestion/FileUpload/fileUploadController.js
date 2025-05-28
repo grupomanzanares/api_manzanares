@@ -77,7 +77,8 @@ function extractInvoiceInfo(xmlJson) {
 function extractInvoiceData(data) {
     try {
         const invoice = data.Invoice || data;
-        console.log('DEBUG INVOICE JSON:', JSON.stringify(invoice, null, 2));
+       //console.log('DEBUG INVOICE JSON:', JSON.stringify(invoice, null, 2));
+        console.log('DEBUG INVOICE ITEMS:', JSON.stringify(invoice["cac:InvoiceLine"], null, 2));
 
         const result = {
             numeroFactura: invoice["cbc:ID"] || 'No disponible',
@@ -97,7 +98,9 @@ function extractInvoiceData(data) {
 
         // Items (si existen)
         if (invoice["cac:InvoiceLine"]) {
-            const lines = Array.isArray(invoice["cac:InvoiceLine"]) ? invoice["cac:InvoiceLine"] : [invoice["cac:InvoiceLine"]];
+            const lines = Array.isArray(invoice["cac:InvoiceLine"])
+                ? invoice["cac:InvoiceLine"]
+                : [invoice["cac:InvoiceLine"]];
             result.items = lines.map(line => ({
                 id: line["cbc:ID"] || 'No disponible',
                 descripcion: line["cac:Item"]?.["cbc:Description"] || 'No disponible',
