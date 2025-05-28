@@ -78,6 +78,7 @@ function extractInvoiceData(data) {
     try {
         // Intentar obtener los datos básicos de la factura
         const invoice = data.Invoice || data;
+        console.log('DEBUG INVOICE JSON:', JSON.stringify(invoice, null, 2)); 
         
         // Crear objeto base con valores por defecto
         const result = {
