@@ -130,7 +130,7 @@ function extractInvoiceData(data) {
                 codigoTercero1: codigoTercero1 || '890201881',
                 numeroDeCaja: "1",
                 numeroCaja: "1",
-                precioTotal: parseFloat(invoice["cac:LegalMonetaryTotal"]?.["cbc:PayableAmount"] || '0.00'),
+                precioTotal: parseFloat(invoice["cac:LegalMonetaryTotal"]?.["cbc:TaxInclusiveAmount"] || '0.00'),
                 direccionFactura: " ",
                 codigoFormaPago: "30",
                 almacenOrigenEncabezado: "XXX",
