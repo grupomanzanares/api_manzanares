@@ -178,16 +178,18 @@ function extractInvoiceData(data) {
                     parseFloat(invoicedQuantity["#text"] || '0') : 
                     parseFloat(invoicedQuantity || '0');
 
-                const precioUnitario = parseFloat(line["cac:Price"]?.["cbc:PriceAmount"] || '0.00');
-                const precioTotal = parseFloat(line["cbc:LineExtensionAmount"] || '0.00');
-                const costoUnitario = 13300; // Este valor debería venir de algún lugar
+                // Extraer el costo unitario del PriceAmount
+                const priceAmount = line["cac:Price"]?.["cbc:PriceAmount"];
+                const costoUnitario = typeof priceAmount === 'object' ? 
+                    parseFloat(priceAmount["#text"] || '0') : 
+                    parseFloat(priceAmount || '0');
                 const costoTotal = cantidad * costoUnitario;
 
                 console.log('DEBUG Item:', {
                     numeroItem: index + 1,
                     cantidad: cantidad,
-                    precioUnitario: precioUnitario,
-                    precioTotal: precioTotal
+                    costoUnitario: costoUnitario,
+                    costoTotal: costoTotal
                 });
 
                 return {
@@ -200,7 +202,7 @@ function extractInvoiceData(data) {
                     producto: "V0001", // Este valor debería venir de algún lugar
                     almacen: result.documento.almacenOrigenEncabezado,
                     cantidad: cantidad,
-                    cantidadAlterna: cantidad,
+                    cantidadAlterna: 0,
                     consecutivoItemOrdenDeProducion: 0,
                     numeroDePedidoProduccion: 0,
                     itemPedidoProduccion: 0,
@@ -209,15 +211,15 @@ function extractInvoiceData(data) {
                     usuarioCreacion: result.documento.usuarioCreacion,
                     fechaCreacion: result.documento.fechaCreacion,
                     horaCreacion: result.documento.horaCreacion,
-                    precioUnitario: precioUnitario,
-                    precioTotal: precioTotal,
+                    precioUnitario: 0,
+                    precioTotal: 0,
                     porcentajeDescuentoDelPrecio: 0,
                     valorDescuentoDelPrecio: 0,
                     valorDescuento2: 0,
                     valorDescuento3: 0,
                     porcentajeImpuesto: 0,
                     valorImpuestoDelPrecio: 0,
-                    precioTotalIncluidoImpuesto: precioTotal,
+                    precioTotalIncluidoImpuesto: 0,
                     costoUnitario: costoUnitario,
                     costoTotal: costoTotal,
                     porcentajeDescuentoDelCosto: 0,
