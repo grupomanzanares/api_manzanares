@@ -97,19 +97,19 @@ function extractInvoiceData(data) {
         const result = {
             documento: {
                 tipoDocumento: "PV",
-                prefijo: "CAN",
+                prefijo: "-",
                 numero: 3000009999, // Este valor debería venir de algún lugar o ser generado
                 fechaDocumento: invoice["cbc:IssueDate"] || '2025-06-10',
-                fechaVencimiento: "2025-06-25", // Este valor debería calcularse o venir de algún lugar
+                fechaVencimiento: invoice["cbc:IssueDate"] || '2025-06-25',
                 codigoTercero1: invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"]?.["#text"] || 
                                invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"] || 
                                890201881,
-                numeroDeCaja: "8",
-                numeroCaja: "8",
+                numeroDeCaja: "1",
+                numeroCaja: "1",
                 precioTotal: parseFloat(invoice["cac:LegalMonetaryTotal"]?.["cbc:PayableAmount"] || '0.00'),
                 direccionFactura: " ",
                 codigoFormaPago: "30",
-                almacenOrigenEncabezado: "P02",
+                almacenOrigenEncabezado: "XXX",
                 codigoMedioPublicitario: 0,
                 codigoPatronContable: "CP001",
                 cantidadBase: 0,
