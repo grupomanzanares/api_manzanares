@@ -93,17 +93,41 @@ function extractInvoiceData(data) {
         // Extraer el número de factura y limpiarlo
         const numeroFactura = (invoice["cbc:ID"] || '').trim();
         
+        // Obtener el código del emisor con su schemeAgencyID
+        const supplierParty = invoice["cac:AccountingSupplierParty"];
+        const partyTaxScheme = supplierParty?.["cac:Party"]?.["cac:PartyTaxScheme"];
+        const companyID = partyTaxScheme?.["cbc:CompanyID"];
+        
+        // Extraer el código del emisor y su tipo de identificación
+        let codigoTercero1 = '';
+        let schemeAgencyID = '';
+        
+        if (companyID) {
+            // Si es un objeto con atributos
+            if (typeof companyID === 'object') {
+                codigoTercero1 = companyID["#text"] || companyID;
+                schemeAgencyID = companyID["@_schemeAgencyID"];
+                console.log('DEBUG Emisor:', {
+                    codigo: codigoTercero1,
+                    schemeAgencyID: schemeAgencyID,
+                    schemeID: companyID["@_schemeID"],
+                    schemeName: companyID["@_schemeName"]
+                });
+            } else {
+                // Si es un string directo
+                codigoTercero1 = companyID;
+            }
+        }
+        
         // Crear el objeto documento con el formato requerido
         const result = {
             documento: {
                 tipoDocumento: "PV",
                 prefijo: "-",
-                numero: 3000009999, // Este valor debería venir de algún lugar o ser generado
+                numero: 3000009999,
                 fechaDocumento: invoice["cbc:IssueDate"] || '2025-06-10',
                 fechaVencimiento: invoice["cbc:DueDate"] || '2025-06-25',
-                codigoTercero1: invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"]?.["#text"] || 
-                               invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"] || 
-                               890201881,
+                codigoTercero1: codigoTercero1 || '890201881',
                 numeroDeCaja: "1",
                 numeroCaja: "1",
                 precioTotal: parseFloat(invoice["cac:LegalMonetaryTotal"]?.["cbc:PayableAmount"] || '0.00'),
