@@ -93,6 +93,17 @@ function extractInvoiceData(data) {
         // Extraer el número de factura y limpiarlo
         const numeroFactura = (invoice["cbc:ID"] || '').trim();
         
+        // Obtener la fecha del documento y calcular año y mes
+        const fechaDocumento = invoice["cbc:IssueDate"] || '2025-06-10';
+        const fecha = new Date(fechaDocumento);
+        const añoMovimiento = fecha.getFullYear();
+        const mesMovimiento = fecha.getMonth() + 1; // getMonth() devuelve 0-11, sumamos 1 para tener 1-12
+        
+        // Obtener fecha y hora actual
+        const ahora = new Date();
+        const fechaHoraActual = ahora.toISOString().replace('T', ' ').slice(0, 19);
+        const fechaActual = ahora.toISOString().split('T')[0];
+        
         // Obtener el código del emisor con su schemeAgencyID
         const supplierParty = invoice["cac:AccountingSupplierParty"];
         const partyTaxScheme = supplierParty?.["cac:Party"]?.["cac:PartyTaxScheme"];
@@ -137,15 +148,15 @@ function extractInvoiceData(data) {
                 codigoMedioPublicitario: 0,
                 codigoPatronContable: "CP001",
                 cantidadBase: 0,
-                documentoExterno: numeroFactura.padEnd(20, ' '),
-                añoMovimiento: 2025,
-                mesMovimiento: 6,
+                documentoExterno: numeroFactura,
+                añoMovimiento: añoMovimiento,
+                mesMovimiento: mesMovimiento,
                 usuarioCreacion: "VEN_ROT3",
-                fechaCreacion: "2025-06-10 00:06:00",
-                horaCreacion: "2025-06-10  16:44:49",
-                hora: "2025-06-10  16:44:49",
+                fechaCreacion: fechaHoraActual,
+                horaCreacion: fechaHoraActual,
+                hora: fechaHoraActual,
                 usuarioModificacion: "",
-                fechaHoraModificacion: "2025-06-10 ",
+                fechaHoraModificacion: fechaActual,
                 observaciones: "MIG",
                 items: []
             },
