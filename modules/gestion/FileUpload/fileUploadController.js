@@ -131,7 +131,7 @@ function extractInvoiceData(data) {
                 numeroDeCaja: "1",
                 numeroCaja: "1",
                 precioTotal: parseFloat(invoice["cac:LegalMonetaryTotal"]?.["cbc:TaxInclusiveAmount"] || '0.00'),
-                direccionFactura: " ",
+                direccionFactura: ".",
                 codigoFormaPago: "30",
                 almacenOrigenEncabezado: "XXX",
                 codigoMedioPublicitario: 0,
