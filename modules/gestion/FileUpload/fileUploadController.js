@@ -100,7 +100,7 @@ function extractInvoiceData(data) {
                 prefijo: "-",
                 numero: 3000009999, // Este valor debería venir de algún lugar o ser generado
                 fechaDocumento: invoice["cbc:IssueDate"] || '2025-06-10',
-                fechaVencimiento: invoice["cbc:IssueDate"] || '2025-06-25',
+                fechaVencimiento: invoice["cbc:DueDate"] || '2025-06-25',
                 codigoTercero1: invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"]?.["#text"] || 
                                invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"] || 
                                890201881,
