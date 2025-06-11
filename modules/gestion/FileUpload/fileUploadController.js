@@ -172,11 +172,23 @@ function extractInvoiceData(data) {
                 : [invoice["cac:InvoiceLine"]];
 
             result.documento.items = lines.map((line, index) => {
-                const cantidad = parseFloat(line["cbc:InvoicedQuantity"] || '0');
+                // Extraer la cantidad correctamente del XML
+                const invoicedQuantity = line["cbc:InvoicedQuantity"];
+                const cantidad = typeof invoicedQuantity === 'object' ? 
+                    parseFloat(invoicedQuantity["#text"] || '0') : 
+                    parseFloat(invoicedQuantity || '0');
+
                 const precioUnitario = parseFloat(line["cac:Price"]?.["cbc:PriceAmount"] || '0.00');
                 const precioTotal = parseFloat(line["cbc:LineExtensionAmount"] || '0.00');
                 const costoUnitario = 13300; // Este valor debería venir de algún lugar
                 const costoTotal = cantidad * costoUnitario;
+
+                console.log('DEBUG Item:', {
+                    numeroItem: index + 1,
+                    cantidad: cantidad,
+                    precioUnitario: precioUnitario,
+                    precioTotal: precioTotal
+                });
 
                 return {
                     tipoDocumento: result.documento.tipoDocumento,
