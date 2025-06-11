@@ -90,34 +90,112 @@ function extractInvoiceData(data) {
         console.log('DEBUG INVOICE JSON:', JSON.stringify(invoice, null, 2));
         console.log('DEBUG INVOICE ITEMS:', JSON.stringify(invoice["cac:InvoiceLine"], null, 2));
 
+        // Extraer el número de factura y limpiarlo
+        const numeroFactura = (invoice["cbc:ID"] || '').trim();
+        
+        // Crear el objeto documento con el formato requerido
         const result = {
-            numeroFactura: invoice["cbc:ID"] || 'No disponible',
-            fechaEmision: invoice["cbc:IssueDate"] || 'No disponible',
-            horaEmision: invoice["cbc:IssueTime"] || 'No disponible',
-            valorTotal: invoice["cac:LegalMonetaryTotal"]?.["cbc:PayableAmount"] || '0.00',
-            emisor: {
-                nit: invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"]?.["#text"] || invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"] || 'No disponible',
-                nombre: invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:RegistrationName"] || 'No disponible'
+            documento: {
+                tipoDocumento: "PV",
+                prefijo: "CAN",
+                numero: 3000009999, // Este valor debería venir de algún lugar o ser generado
+                fechaDocumento: invoice["cbc:IssueDate"] || '2025-06-10',
+                fechaVencimiento: "2025-06-25", // Este valor debería calcularse o venir de algún lugar
+                codigoTercero1: invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"]?.["#text"] || 
+                               invoice["cac:SenderParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"] || 
+                               890201881,
+                numeroDeCaja: "8",
+                numeroCaja: "8",
+                precioTotal: parseFloat(invoice["cac:LegalMonetaryTotal"]?.["cbc:PayableAmount"] || '0.00'),
+                direccionFactura: " ",
+                codigoFormaPago: "30",
+                almacenOrigenEncabezado: "P02",
+                codigoMedioPublicitario: 0,
+                codigoPatronContable: "CP001",
+                cantidadBase: 0,
+                documentoExterno: numeroFactura.padEnd(20, ' '),
+                añoMovimiento: 2025,
+                mesMovimiento: 6,
+                usuarioCreacion: "VEN_ROT3",
+                fechaCreacion: "2025-06-10 00:06:00",
+                horaCreacion: "2025-06-10  16:44:49",
+                hora: "2025-06-10  16:44:49",
+                usuarioModificacion: "",
+                fechaHoraModificacion: "2025-06-10 ",
+                observaciones: "MIG",
+                items: []
             },
-            receptor: {
-                nit: invoice["cac:ReceiverParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"]?.["#text"] || invoice["cac:ReceiverParty"]?.["cac:PartyTaxScheme"]?.["cbc:CompanyID"] || 'No disponible',
-                nombre: invoice["cac:ReceiverParty"]?.["cac:PartyTaxScheme"]?.["cbc:RegistrationName"] || 'No disponible'
-            },
-            items: []
+            actualizarDocOrigen: false,
+            desdeCapturaNueva: true,
+            tipoEntrega: 1
         };
 
-        // Items (si existen)
+        // Procesar los items
         if (invoice["cac:InvoiceLine"]) {
             const lines = Array.isArray(invoice["cac:InvoiceLine"])
                 ? invoice["cac:InvoiceLine"]
                 : [invoice["cac:InvoiceLine"]];
-            result.items = lines.map(line => ({
-                id: line["cbc:ID"] || 'No disponible',
-                descripcion: line["cac:Item"]?.["cbc:Description"] || 'No disponible',
-                cantidad: line["cbc:InvoicedQuantity"] || '0',
-                valorUnitario: line["cac:Price"]?.["cbc:PriceAmount"] || '0.00',
-                valorTotal: line["cbc:LineExtensionAmount"] || '0.00'
-            }));
+
+            result.documento.items = lines.map((line, index) => {
+                const cantidad = parseFloat(line["cbc:InvoicedQuantity"] || '0');
+                const precioUnitario = parseFloat(line["cac:Price"]?.["cbc:PriceAmount"] || '0.00');
+                const precioTotal = parseFloat(line["cbc:LineExtensionAmount"] || '0.00');
+                const costoUnitario = 13300; // Este valor debería venir de algún lugar
+                const costoTotal = cantidad * costoUnitario;
+
+                return {
+                    tipoDocumento: "PV",
+                    prefijo: "CAN",
+                    numero: 3000005504, // Mismo número que el documento
+                    numeroItem: index + 1,
+                    fechaDocumento: result.documento.fechaDocumento,
+                    CentroDeCosto: "02050102",
+                    producto: "V0001", // Este valor debería venir de algún lugar
+                    almacen: "P02",
+                    cantidad: cantidad,
+                    cantidadAlterna: cantidad,
+                    consecutivoItemOrdenDeProducion: 0,
+                    numeroDePedidoProduccion: 0,
+                    itemPedidoProduccion: 0,
+                    añoMovimiento: 2025,
+                    mesMovimiento: 6,
+                    usuarioCreacion: "VEN_ROT3",
+                    fechaCreacion: "2025-06-10 00:06:00",
+                    horaCreacion: "2025-06-10  16:44:49",
+                    precioUnitario: precioUnitario,
+                    precioTotal: precioTotal,
+                    porcentajeDescuentoDelPrecio: 0,
+                    valorDescuentoDelPrecio: 0,
+                    valorDescuento2: 0,
+                    valorDescuento3: 0,
+                    porcentajeImpuesto: 0,
+                    valorImpuestoDelPrecio: 0,
+                    precioTotalIncluidoImpuesto: precioTotal,
+                    costoUnitario: costoUnitario,
+                    costoTotal: costoTotal,
+                    porcentajeDescuentoDelCosto: 0,
+                    valorDescuentoDelCosto: 0,
+                    valorImpuestoDelCosto: 0,
+                    costoTotalSinImpuesto: costoTotal,
+                    costoTotalIncluidoImpuesto: costoTotal,
+                    costoTotalNiif: 0,
+                    tipoNormaLocalNiif: "A",
+                    cantidadUnidadMedidaMovimiento: 1,
+                    mtoDetalladoClasificacion: [{
+                        tipoDocumento: "PV",
+                        prefijo: "CAN",
+                        numero: 3000005504,
+                        numeroItem: index + 1,
+                        cantidad: cantidad,
+                        cantidadAlterna: cantidad,
+                        codigoClasificacion: "00",
+                        mes: 6,
+                        año: 2025,
+                        producto: "V0001",
+                        tipoProducto: ""
+                    }]
+                };
+            });
         }
 
         return result;
