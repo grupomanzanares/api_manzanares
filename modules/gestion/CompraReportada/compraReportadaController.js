@@ -130,8 +130,8 @@ const getCompraReportada = async (req, res) => {
         // Si existe la ruta del JSON, intentar leer el archivo
         if (jsonPath) {
             try {
-                // Construir la ruta completa al archivo JSON
-                const fullPath = path.join(process.cwd(), 'uploads', path.basename(jsonPath));
+                // Construir la ruta completa al archivo JSON incluyendo la carpeta public
+                const fullPath = path.join(process.cwd(), 'public', 'uploads', path.basename(jsonPath));
                 console.log('Intentando leer archivo JSON desde:', fullPath);
                 
                 const jsonData = await fs.readFile(fullPath, 'utf8');
