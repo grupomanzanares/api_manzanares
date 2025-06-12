@@ -4,9 +4,12 @@ import { compraReportada, comprasEstado, comprasTipo, empresa, User, matrizAutor
 import { emailNotAutorizacion } from "../../../helpers/emails.js";
 import { ccosto } from "../../maestras/masterRelations.js";
 import registroDian from "../RegistroDian/registroDian.js";
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const entity = "compraReportada"
 
@@ -120,11 +123,28 @@ const getCompraReportada = async (req, res) => {
             c.codigo === data.ccosto && c.empresaId === empresaId
         );
 
+        // Construir la ruta del archivo JSON
+        const jsonPath = data.urlPdf ? data.urlPdf.replace('.pdf', '.json') : null;
+        let jsonContent = null;
+
+        // Si existe la ruta del JSON, intentar leer el archivo
+        if (jsonPath) {
+            try {
+                const fullPath = path.join(__dirname, '..', '..', '..', jsonPath);
+                const jsonData = await fs.readFile(fullPath, 'utf8');
+                jsonContent = JSON.parse(jsonData);
+            } catch (error) {
+                console.error('Error al leer el archivo JSON:', error);
+                // Si hay error al leer el archivo, continuamos sin el contenido JSON
+            }
+        }
+
         // Crear el resultado enriquecido
         const resultado = {
             ...data.toJSON(),
             ccostoNombre: ccostoEncontrado?.nombre || null,
-            urlJson: data.urlPdf ? data.urlPdf.replace('.pdf', '.json') : null
+            urlJson: jsonPath,
+            jsonContent: jsonContent // Incluir el contenido del JSON en la respuesta
         };
 
         res.status(200).json(resultado);
