@@ -104,7 +104,29 @@ const getCompraReportada = async (req, res) => {
                 message: `${entity} no encontrado(a) ó inactivo (a) `
             })
         }
-        res.status(200).json(data);
+
+        // Cargar empresas y centros de costo
+        const [empresas, centrosCosto] = await Promise.all([
+            empresa.findAll({ attributes: ['id', 'nit'] }),
+            ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
+        ]);
+
+        // Buscar el ID de la empresa a partir del NIT
+        const empresaEncontrada = empresas.find(e => e.nit === data.empresa);
+        const empresaId = empresaEncontrada?.id;
+
+        // Buscar el nombre del centro de costo por código y empresaId
+        const ccostoEncontrado = centrosCosto.find(c =>
+            c.codigo === data.ccosto && c.empresaId === empresaId
+        );
+
+        // Crear el resultado enriquecido
+        const resultado = {
+            ...data.toJSON(),
+            ccostoNombre: ccostoEncontrado?.nombre || null
+        };
+
+        res.status(200).json(resultado);
     } catch (error) {
         handleHttpError(res, `Error al traer ${entity}  `)
         console.error(error)
