@@ -77,7 +77,27 @@ const getCompraReportada = async (req, res) => {
             where: {
                 id: id,
                 habilitado: true
-            }
+            },
+            include: [
+                {
+                    model: comprasTipo,
+                    attributes: ['id', 'nombre'],
+                },
+                {
+                    model: comprasEstado,
+                    attributes: ['id', 'nombre'],
+                },
+                {
+                    model: User, 
+                    as: 'responsable',
+                    attributes: ["name", "email", "celphone"]
+                },
+                {
+                    model: empresa,
+                    as: 'empresaInfo',
+                    attributes: ['id', 'nombre', 'nit'],
+                }
+            ]
         })
         if (!data) {
             return res.status(404).json({
@@ -85,7 +105,6 @@ const getCompraReportada = async (req, res) => {
             })
         }
         res.status(200).json(data);
-        // console.log(data) /
     } catch (error) {
         handleHttpError(res, `Error al traer ${entity}  `)
         console.error(error)
