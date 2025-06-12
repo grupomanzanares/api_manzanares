@@ -124,7 +124,6 @@ const getCompraReportada = async (req, res) => {
         const resultado = {
             ...data.toJSON(),
             ccostoNombre: ccostoEncontrado?.nombre || null
-
         };
 
         res.status(200).json(resultado);
@@ -137,33 +136,21 @@ const getCompraReportada = async (req, res) => {
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const createCompraReportada = async (req, res) => {
-
-
     console.log('Recibido en el servidor:');
     console.log('Cuerpo de la solicitud:', req.body);
     console.log('Archivos:', req.files);
 
-    // await sleep(60000); // 5000 milisegundos = 5 segundos
-
-
     try {
         const body = matchedData(req);
 
-        // Formatear el valor decimal
-        // if (body.valor) {
-        //     body.valor = body.valor.toString().replace(/\./g, '').replace(',', '.');
-        //     body.valor = parseFloat(body.valor);
-        //     if (isNaN(body.valor)) {
-        //         return res.status(400).json({ error: 'El campo valor no es un número válido' });
-        //     }
-        // }
-
-        // Verificar si hay un archivo de imagen y obtener su ruta
-        const logoPath = req.file ? `/uploads/${req.file.filename}` : null;
+        // Verificar si hay archivos y obtener sus rutas
+        const pdfPath = req.files?.pdf ? `/uploads/${req.files.pdf[0].filename}` : null;
+        const jsonPath = req.files?.json ? `/uploads/${req.files.json[0].filename}` : null;
 
         const nuevo = await compraReportada.create({
             ...body,
-            logo: logoPath, // Guardar la ruta en la BD
+            urlPdf: pdfPath,
+            urlJson: jsonPath
         });
         console.log('Registro creado exitosamente:', nuevo.id);
 
@@ -171,7 +158,6 @@ const createCompraReportada = async (req, res) => {
             mensaje: 'Compra reportada creada exitosamente',
             data: nuevo
         });
-
 
     } catch (error) {
         console.log(error)
