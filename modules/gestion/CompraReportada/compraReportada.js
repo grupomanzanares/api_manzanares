@@ -48,6 +48,11 @@ const compraReportada = db.define('compras_reportadas', {
         allowNull: true
     },
 
+    urlJson: {
+        type: DataTypes.STRING(150),
+        allowNull: true
+    },
+
     ccosto: {
         type: DataTypes.STRING(20),
         allowNull: true

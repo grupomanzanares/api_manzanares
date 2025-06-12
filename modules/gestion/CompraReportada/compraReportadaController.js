@@ -123,7 +123,9 @@ const getCompraReportada = async (req, res) => {
         // Crear el resultado enriquecido
         const resultado = {
             ...data.toJSON(),
-            ccostoNombre: ccostoEncontrado?.nombre || null
+            ccostoNombre: ccostoEncontrado?.nombre || null,
+            // Construir la URL del JSON basada en la URL del PDF
+            urlJson: data.urlPdf ? data.urlPdf.replace('.pdf', '.json') : null
         };
 
         res.status(200).json(resultado);
