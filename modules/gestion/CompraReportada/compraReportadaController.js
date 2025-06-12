@@ -130,9 +130,13 @@ const getCompraReportada = async (req, res) => {
         // Si existe la ruta del JSON, intentar leer el archivo
         if (jsonPath) {
             try {
-                const fullPath = path.join(__dirname, '..', '..', '..', jsonPath);
+                // Construir la ruta completa al archivo JSON
+                const fullPath = path.join(process.cwd(), 'uploads', path.basename(jsonPath));
+                console.log('Intentando leer archivo JSON desde:', fullPath);
+                
                 const jsonData = await fs.readFile(fullPath, 'utf8');
                 jsonContent = JSON.parse(jsonData);
+                console.log('Archivo JSON leído exitosamente');
             } catch (error) {
                 console.error('Error al leer el archivo JSON:', error);
                 // Si hay error al leer el archivo, continuamos sin el contenido JSON
