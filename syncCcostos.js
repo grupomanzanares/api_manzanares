@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import cron from 'node-cron';
 import db from './config/db.js';
-import { syncronizarCCostos } from "./modules/maestras/ccosto/syncService.js";
+import { syncronizarMaestrasYeminus } from "./modules/maestras/syncService.js";
 try {
         await db.authenticate();
         await db.sync(); // si quieres reflejar modelos actualizados
@@ -14,7 +14,7 @@ try {
     async function ejecutarSincronizacion() {
             try {
                 console.log(`[${new Date().toISOString()}] ⏳ Ejecutando sincronización de centros de costos...`);
-                await syncronizarCCostos();
+                await syncronizarMaestrasYeminus();
                 console.log(`[${new Date().toISOString()}] ✅ Sincronización completada`);
                 } catch (err) {
                     console.error(`[${new Date().toISOString()}] ❌ Error durante sincronización:`, err);
