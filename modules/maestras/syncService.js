@@ -204,10 +204,10 @@ async function syncronizarProductos(token) {
         for (const item of productosData) {
             try {
                 // Intentar acceder a las propiedades usando múltiples formatos
-                const nit = (item.empresA_NIT || "").toString().trim();
-                const codigoProducto = (item.producto || item.PRODUCTO || "").toString().trim();
-                const nombreProducto = (item.nproducto || item.NPRODUCTO || "").toString().trim();
-                const estadoRaw = (item.estado || item.ESTADO || "").toString().trim();
+                const nit = (item.Nit || "").toString().trim();
+                const codigoProducto = (item.PR_PRODUCTO || item.PR_PRODUCTO || "").toString().trim();
+                const nombreProducto = (item.PR_DESCRIPCION || item.PR_DESCRIPCION || "").toString().trim();
+                const estadoRaw = (item.PR_ESTADO || item.PR_ESTADO || "").toString().trim();
                 const estado = estadoRaw === "1" || estadoRaw === "A";
                 
                 if (!nit || !codigoProducto) {
