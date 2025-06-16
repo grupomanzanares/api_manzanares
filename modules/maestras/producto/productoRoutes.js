@@ -1,5 +1,4 @@
 import express from 'express';import { apiAuth } from '../../../auth/middleware/apiauth.js';
-import { validateCreateCcosto, validateGetCcosto,validateGetCcostoxNit } from './ccostoValidator.js';
 import { getProductos, getProducto } from './productoController.js';
  
 
