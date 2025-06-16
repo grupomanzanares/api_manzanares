@@ -80,7 +80,7 @@ async function fetchProductos(token) {
             `${externalBaseUrl}/app/informes/informespersonalizados/ejecutarconsultainforme`,
             {
                 crearArchivo: false,
-                idInforme: 60
+                idInforme: 203
             },
             {
                 headers: {
