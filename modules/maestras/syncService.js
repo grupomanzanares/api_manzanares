@@ -208,6 +208,9 @@ async function syncronizarProductos(token) {
                 const codigoProducto = (item.pR_PRODUCTO || item.pR_PRODUCTO || "").toString().trim();
                 const nombreProducto = (item.pR_DESCRIPCION || item.pR_DESCRIPCION || "").toString().trim();
                 const estadoRaw = (item.pR_ESTADO || item.pR_ESTADO || "").toString().trim();
+                const und = (item.pR_UNIDADDEMEDIDA || item.pR_UNIDADDEMEDIDA || "").toString().trim();
+                const grupo = (item.pR_GRUPO || item.pR_GRUPO || "").toString().trim();
+                const subgrupo = (item.pR_SUBGRUPO || item.pR_SUBGRUPO || "").toString().trim();
                 const estado = estadoRaw === "1" || estadoRaw === "A";
                 
                 if (!nit || !codigoProducto) {
@@ -231,6 +234,9 @@ async function syncronizarProductos(token) {
                     defaults: {
                         nombre: nombreProducto,
                         estado: estado,
+                        und:und,
+                        grupo:grupo,
+                        subgrupo:subgrupo,
                         user: 'CARGUE',
                         userMod: 'CARGUE'
                     }
@@ -241,6 +247,9 @@ async function syncronizarProductos(token) {
                     await productoInstance.update({
                         nombre: nombreProducto,  // Actualizar nombre si cambió
                         estado: estado,   // Actualizar estado si cambió
+                        und:und,
+                        grupo:grupo,
+                        subgrupo:subgrupo,
                         userMod: 'CARGUE' // Marcar quién hizo la modificación
                     });
                 }

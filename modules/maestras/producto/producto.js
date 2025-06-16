@@ -20,6 +20,22 @@ const producto = db.define('productos', {
     },
     
 
+    und: {
+        type: DataTypes.STRING(5),
+        allowNull: false
+    },
+
+    
+    grupo: {
+        type: DataTypes.STRING(5),
+        allowNull: false
+    },
+
+   
+    subgrupo: {
+        type: DataTypes.STRING(5),
+        allowNull: false
+    },
     estado:{
         type: DataTypes.BOOLEAN, 
         allowNull: false,
