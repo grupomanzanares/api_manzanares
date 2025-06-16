@@ -63,7 +63,7 @@ const getProductoxNit = async(req, res) => {
         }
 
 
-        const data = await ccosto.findAll({
+        const data = await producto.findAll({
             where: {
                 empresaId: empresaData.id,
                 estado: true
