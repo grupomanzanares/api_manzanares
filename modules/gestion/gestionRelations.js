@@ -5,6 +5,7 @@ import empresa from "../maestras/Empresa/empresa.js";
 import matrizAutorizaciones from "./MatrizAutorizaciones/matrizAutorizaciones.js";
 import compraReportada from "./CompraReportada/compraReportada.js";
 
+
 // Relaciones para compraReportada
 comprasTipo.hasMany(compraReportada, { foreignKey: "tipoCompraId" });
 compraReportada.belongsTo(comprasTipo, { foreignKey: "tipoCompraId" });

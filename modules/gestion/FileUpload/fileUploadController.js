@@ -5,6 +5,9 @@ import { Op } from 'sequelize';
 import db from '../../../config/db.js';
 import { compraReportada } from '../gestionRelations.js';
 import { XMLParser } from 'fast-xml-parser';
+import { matchedData } from "express-validator";
+import { handleHttpError } from "../../../helpers/httperror.js";
+import CompraReportadaDetalle from "../CompraReportadaDetalle/compraReportadaDetalle.js";
 
 // Función para limpiar el nombre del archivo
 function cleanFileName(name) {
@@ -185,11 +188,52 @@ function extractInvoiceData(data) {
                     parseFloat(priceAmount || '0');
                 const costoTotal = cantidad * costoUnitario;
 
+                // Extraer el porcentaje de IVA
+                let porcentajeImpuesto = 0;
+                const taxSubtotal = line["cac:TaxTotal"]?.["cac:TaxSubtotal"];
+                if (taxSubtotal) {
+                    const taxCategory = taxSubtotal["cac:TaxCategory"];
+                    if (taxCategory && taxCategory["cac:TaxScheme"]?.["cbc:ID"] === "01") {
+                        porcentajeImpuesto = parseFloat(taxCategory["cbc:Percent"] || '0');
+                    }
+                }
+
+                // Extraer el producto
+                let producto = ""; // valor por defecto
+                let nproducto = "";
+                const item = line["cac:Item"];
+                if (item) {
+                    // Obtener la descripción del producto
+                    const description = item["cbc:Description"];
+                    if (description) {
+                        nproducto = description;
+                    }
+
+                    // Intentar obtener el ID del producto del StandardItemIdentification
+                    const standardItemId = item["cac:StandardItemIdentification"]?.["cbc:ID"];
+                    if (standardItemId) {
+                        if (typeof standardItemId === 'object' && standardItemId["@_schemeAgencyID"]) {
+                            producto = standardItemId["#text"] || standardItemId;
+                        } else {
+                            producto = standardItemId;
+                        }
+                    } else {
+                        // Si no hay ID, usar la descripción
+                        const description = item["cbc:Description"];
+                        if (description) {
+                            producto = description;
+                        }
+                    }
+                }
+
                 console.log('DEBUG Item:', {
                     numeroItem: index + 1,
                     cantidad: cantidad,
                     costoUnitario: costoUnitario,
-                    costoTotal: costoTotal
+                    costoTotal: costoTotal,
+                    porcentajeImpuesto: porcentajeImpuesto,
+                    producto: producto,
+                    nproducto: nproducto
                 });
 
                 return {
@@ -199,7 +243,8 @@ function extractInvoiceData(data) {
                     numeroItem: index + 1,
                     fechaDocumento: result.documento.fechaDocumento,
                     CentroDeCosto: "02050102",
-                    producto: "V0001", // Este valor debería venir de algún lugar
+                    producto: producto, 
+                    nproducto: nproducto, 
                     almacen: result.documento.almacenOrigenEncabezado,
                     cantidad: cantidad,
                     cantidadAlterna: 0,
@@ -217,7 +262,7 @@ function extractInvoiceData(data) {
                     valorDescuentoDelPrecio: 0,
                     valorDescuento2: 0,
                     valorDescuento3: 0,
-                    porcentajeImpuesto: 0,
+                    porcentajeImpuesto: porcentajeImpuesto,
                     valorImpuestoDelPrecio: 0,
                     precioTotalIncluidoImpuesto: 0,
                     costoUnitario: costoUnitario,
@@ -334,6 +379,44 @@ const processZipFile = async (req, res) => {
                         // Guardar el JSON usando el mismo nombre base
                         const jsonFilePath = path.join(uploadDir, `${zipFileName}.json`);
                         await fs.promises.writeFile(jsonFilePath, JSON.stringify(invoiceData, null, 2));
+
+                        // Procesar el JSON para crear los registros en CompraReportadaDetalle
+                        if (invoiceData && invoiceData.documento && invoiceData.documento.items) {
+                            try {
+                                // Primero eliminamos los registros existentes con el mismo archivo
+                                await CompraReportadaDetalle.destroy({
+                                    where: {
+                                        archivo: zipFileName
+                                    }
+                                });
+                                console.log(`Registros anteriores del archivo ${zipFileName} eliminados`);
+
+                                // Luego creamos los nuevos registros
+                                await CompraReportadaDetalle.bulkCreate(
+                                    invoiceData.documento.items.map(item => ({
+                                        numero: item.numero.toString(),
+                                        numeroItem: item.numeroItem,
+                                        ProductoProveedor: item.producto || '',
+                                        nombreProductoProveedor: '', // Se completará después
+                                        producto: null, // Se completará después
+                                        nombreProducto: '', // Se completará después
+                                        CentroDeCosto: null, // Se completará después
+                                        cantidad: item.cantidad,
+                                        costoUnitario: item.costoUnitario,
+                                        poriva: item.porcentajeImpuesto,
+                                        costoTotal: item.costoTotal,
+                                        compraReportadaId: null, // Se completará después
+                                        user: invoiceData.documento.usuarioCreacion,
+                                        userMod: invoiceData.documento.usuarioCreacion,
+                                        archivo: zipFileName
+                                    }))
+                                );
+                                console.log('Registros de detalle creados correctamente');
+                            } catch (dbError) {
+                                console.error('Error al crear registros de detalle:', dbError);
+                                processingErrors.push(`Error al crear registros de detalle: ${dbError.message}`);
+                            }
+                        }
                     } catch (xmlError) {
                         console.error('Error procesando XML:', xmlError);
                         processingErrors.push(`Error procesando XML: ${entry.entryName}: ${xmlError.message}`);
@@ -419,3 +502,49 @@ const processZipFile = async (req, res) => {
         });
     }
 };
+
+/*
+// Esta función no se está usando actualmente ya que el procesamiento del JSON
+// se realiza directamente en processZipFile cuando se procesa el XML.
+// Se mantiene comentada como referencia por si se necesita procesar JSONs manualmente en el futuro.
+const procesarJson = async (req, res) => {
+    try {
+        const { jsonData, usuarioCreacion } = matchedData(req);
+        const data = JSON.parse(jsonData);
+
+        if (data && data.documento && data.documento.items) {
+            const itemsCreados = await CompraReportadaDetalle.bulkCreate(
+                data.documento.items.map(item => ({
+                    numero: item.numero.toString(),
+                    numeroItem: item.numeroItem,
+                    ProductoProveedor: item.producto || '',
+                    nombreProductoProveedor: '', // Se completará después
+                    producto: null, // Se completará después
+                    nombreProducto: '', // Se completará después
+                    CentroDeCosto: null, // Se completará después
+                    cantidad: item.cantidad,
+                    costoUnitario: item.costoUnitario,
+                    poriva: item.porcentajeImpuesto,
+                    costoTotal: item.costoTotal,
+                    compraReportadaId: null, // Se completará después
+                    user: usuarioCreacion,
+                    userMod: usuarioCreacion
+                }))
+            );
+
+            res.status(200).json({
+                message: "JSON procesado correctamente",
+                itemsProcesados: itemsCreados.length
+            });
+        } else {
+            res.status(400).json({
+                message: "El JSON no contiene la estructura esperada"
+            });
+        }
+
+    } catch (error) {
+        console.error("Error procesando JSON:", error);
+        handleHttpError(res, "Error al procesar el JSON");
+    }
+};
+*/
