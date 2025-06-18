@@ -428,7 +428,6 @@ const processZipFile = async (req, res) => {
                                 console.log(`Registros anteriores del archivo ${zipFileName} eliminados`);
 
                                 // Luego creamos los nuevos registros
-                                console.log("DEBUG itemsToInsert:", itemsToInsert);
                                 await CompraReportadaDetalle.bulkCreate(
                                     invoiceData.documento.items.map(item => ({
                                         numero: invoiceData.documento.documentoExterno || '',
