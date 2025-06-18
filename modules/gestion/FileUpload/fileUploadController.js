@@ -209,20 +209,34 @@ function extractInvoiceData(data) {
                         nproducto = description;
                     }
 
-                    // Intentar obtener el ID del producto del StandardItemIdentification
-                    const standardItemId = item["cac:StandardItemIdentification"]?.["cbc:ID"];
-                    if (standardItemId) {
-                        if (typeof standardItemId === 'object' && standardItemId["@_schemeAgencyID"]) {
-                            producto = standardItemId["#text"] || standardItemId;
-                        } else {
-                            producto = standardItemId;
-                        }
+                    // Primero intentar obtener el ID del SellersItemIdentification
+                    const sellersItemId = item["cac:SellersItemIdentification"]?.["cbc:ID"];
+                    if (sellersItemId) {
+                        producto = typeof sellersItemId === 'object' ? sellersItemId["#text"] : sellersItemId;
                     } else {
-                        // Si no hay ID, usar la descripción
-                        const description = item["cbc:Description"];
-                        if (description) {
-                            producto = description;
+                        // Si no hay SellersItemIdentification, intentar con StandardItemIdentification
+                        const standardItemId = item["cac:StandardItemIdentification"]?.["cbc:ID"];
+                        if (standardItemId) {
+                            if (typeof standardItemId === 'object') {
+                                // Si tiene schemeID="999"
+                                if (standardItemId["@_schemeID"] === "999") {
+                                    // Si el valor es "999", usar la descripción
+                                    if (standardItemId["#text"] === "999") {
+                                        producto = description || "";
+                                    } else {
+                                        // Si no es "999", usar el valor
+                                        producto = standardItemId["#text"] || "";
+                                    }
+                                }
+                            } else {
+                                producto = standardItemId;
+                            }
                         }
+                    }
+
+                    // Si después de todo el proceso producto está vacío, usar la descripción
+                    if (!producto && description) {
+                        producto = description;
                     }
                 }
 
