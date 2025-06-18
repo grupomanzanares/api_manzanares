@@ -394,10 +394,10 @@ const processZipFile = async (req, res) => {
                                 // Luego creamos los nuevos registros
                                 await CompraReportadaDetalle.bulkCreate(
                                     invoiceData.documento.items.map(item => ({
-                                        numero: item.numero.toString(),
+                                        numero: invoiceData.documento.documentoExterno || '',
                                         numeroItem: item.numeroItem,
                                         ProductoProveedor: item.producto || '',
-                                        nombreProductoProveedor: '', // Se completará después
+                                        nombreProductoProveedor: item.nproducto || '', // Usamos nproducto que ya contiene la descripción
                                         producto: null, // Se completará después
                                         nombreProducto: '', // Se completará después
                                         CentroDeCosto: null, // Se completará después
