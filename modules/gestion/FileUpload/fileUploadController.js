@@ -428,27 +428,27 @@ const processZipFile = async (req, res) => {
                                 console.log(`Registros anteriores del archivo ${zipFileName} eliminados`);
 
                                 // Luego creamos los nuevos registros
-                                await CompraReportadaDetalle.bulkCreate(
-                                    invoiceData.documento.items.map(item => ({
-                                        numero: invoiceData.documento.documentoExterno || '',
-                                        numeroItem: item.numeroItem,
-                                        ProductoProveedor: item.producto || '',
-                                        nombreProductoProveedor: item.nproducto || '', // Usamos nproducto que ya contiene la descripción
-                                        producto: null, // Se completará después
-                                        nombreProducto: '', // Se completará después
-                                        CentroDeCosto: null, // Se completará después
-                                        cantidad: item.cantidad,
-                                        costoUnitario: item.costoUnitario,
-                                        poriva: item.porcentajeImpuesto,
-                                        costoBruto: item.costoBruto,
-                                        costoIva: item.costoIva,
-                                        costoTotal: item.costoTotal,
-                                        compraReportadaId: null, // Se completará después
-                                        user: invoiceData.documento.usuarioCreacion,
-                                        userMod: invoiceData.documento.usuarioCreacion,
-                                        archivo: zipFileName
-                                    }))
-                                );
+                                const itemsToInsert = invoiceData.documento.items.map(item => ({
+                                    numero: invoiceData.documento.documentoExterno || '',
+                                    numeroItem: item.numeroItem,
+                                    ProductoProveedor: item.producto || '',
+                                    nombreProductoProveedor: item.nproducto || '', // Usamos nproducto que ya contiene la descripción
+                                    producto: null, // Se completará después
+                                    nombreProducto: '', // Se completará después
+                                    CentroDeCosto: null, // Se completará después
+                                    cantidad: item.cantidad,
+                                    costoUnitario: item.costoUnitario,
+                                    poriva: item.porcentajeImpuesto,
+                                    costoBruto: item.costoBruto ?? 0,
+                                    costoIva: item.costoIva ?? 0,
+                                    costoTotal: item.costoTotal ?? 0,
+                                    compraReportadaId: null, // Se completará después
+                                    user: invoiceData.documento.usuarioCreacion,
+                                    userMod: invoiceData.documento.usuarioCreacion,
+                                    archivo: zipFileName
+                                }));
+                                console.log("PRIMER ITEM A INSERTAR:", itemsToInsert[0]);
+                                await CompraReportadaDetalle.bulkCreate(itemsToInsert);
                                 console.log('Registros de detalle creados correctamente');
                             } catch (dbError) {
                                 console.error('Error al crear registros de detalle:', dbError);
