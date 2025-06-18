@@ -99,7 +99,6 @@ const compraReportada = db.define('compras_reportadas', {
     }
 },
 {
-    tableName: "compras_reportadas_detalle", 
     timestamps: true,
     freezeTableName: true // Evita que Sequelize pluralice el nombre de la tabla
 });
