@@ -45,7 +45,7 @@ const CompraReportadaDetalle = db.define("CompraReportadaDetalle", {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
-    poriva: {
+    porIva: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },

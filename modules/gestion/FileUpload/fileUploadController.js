@@ -440,7 +440,7 @@ const processZipFile = async (req, res) => {
                                     CentroDeCosto: null, // Se completará después
                                     cantidad: item.cantidad,
                                     costoUnitario: item.costoUnitario,
-                                    poriva: item.porcentajeImpuesto,
+                                    porIva: item.porcentajeImpuesto,
                                     costoBruto: item.costoBruto ?? 0,
                                     costoIva: item.costoIva ?? 0,
                                     costoTotal: item.costoTotal ?? 0,
