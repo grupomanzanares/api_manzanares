@@ -7,11 +7,30 @@ const CompraReportadaDetalle = db.define("CompraReportadaDetalle", {
         primaryKey: true,
         autoIncrement: true
     },
-    numero: {
-        type: DataTypes.STRING,
+    tipoDctoErp: {
+        type: DataTypes.STRING(4),
         allowNull: false
     },
-
+    numeroErp: {
+        type: DataTypes.STRING(20),
+        allowNull: false
+    },
+    numeroFactura: {
+        type: DataTypes.STRING(50),
+        allowNull: false
+    },
+    formaPago: {
+        type: DataTypes.STRING(3),
+        allowNull: false
+    },
+    almacen: {
+        type: DataTypes.STRING(5),
+        allowNull: false
+    },
+    patronContable: {
+        type: DataTypes.STRING(10),
+        allowNull: false
+    },
     numeroItem: {
         type: DataTypes.INTEGER,
         allowNull: false

@@ -431,7 +431,12 @@ const processZipFile = async (req, res) => {
 
                                 // Luego creamos los nuevos registros
                                 const itemsToInsert = invoiceData.documento.items.map(item => ({
-                                    numero: invoiceData.documento.documentoExterno || '',
+                                    tipoDctoErp:  invoiceData.documento.tipoDocumento || '',
+                                    numeroErp:  invoiceData.documento.numero || '',
+                                    numeroFactura: invoiceData.documento.documentoExterno || '',
+                                    formaPago:   invoiceData.documento.codigoFormaPago || '',
+                                    almacen:   invoiceData.documento.almacenOrigenEncabezado  || '',
+                                    patronContable: invoiceData.documento.codigoPatronContable  || '',
                                     numeroItem: item.numeroItem,
                                     ProductoProveedor: item.producto || '',
                                     nombreProductoProveedor: item.nproducto || '', // Usamos nproducto que ya contiene la descripción
