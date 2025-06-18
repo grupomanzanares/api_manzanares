@@ -501,6 +501,8 @@ const processZipFile = async (req, res) => {
                     emisor: registro.emisor,
                     numero: registro.numero
                 };
+            } else {
+                console.log(`No se encontró registro en compras_reportadas para el archivo ${zipFileName}. No se actualizó ningún registro, pero el proceso continúa.`);
             }
 
             return res.status(200).json({ 
