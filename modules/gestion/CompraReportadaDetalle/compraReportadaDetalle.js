@@ -80,7 +80,7 @@ const CompraReportadaDetalle = db.define("compras_reportadas_detalle", {
         type: DataTypes.STRING,
         allowNull: true
     }
-}{
+},{
     timestamps: true,
     freezeTableName: true // Evita que Sequelize pluralice el nombre de la tabla
 });
