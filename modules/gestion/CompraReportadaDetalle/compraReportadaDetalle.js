@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import db from "../../../config/db.js";
 
-const CompraReportadaDetalle = db.define("compraReportadaDetalle", {
+const CompraReportadaDetalle = db.define("compras_reportadas_detalle", {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -49,6 +49,17 @@ const CompraReportadaDetalle = db.define("compraReportadaDetalle", {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
+
+    costoIva: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
+    },
+
+    costoBruto: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
+    },
+
     costoTotal: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
@@ -69,10 +80,10 @@ const CompraReportadaDetalle = db.define("compraReportadaDetalle", {
         type: DataTypes.STRING,
         allowNull: true
     }
-}, {
-    tableName: "compraReportadaDetalle",
+}{
     timestamps: true,
-    freezeTableName: true 
+    freezeTableName: true // Evita que Sequelize pluralice el nombre de la tabla
 });
+
 
 export default CompraReportadaDetalle; 
