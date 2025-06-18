@@ -215,6 +215,7 @@ function extractInvoiceData(data) {
                 }
 
                 const costoIva = (costoBruto * porcentajeImpuesto) / 100;
+                const costoTotal = costoBruto + costoIva;
                 
 
                 // Extraer el producto
@@ -265,7 +266,7 @@ function extractInvoiceData(data) {
                     costoUnitario: costoUnitario,
                     costoBruto : costoBruto,
                     costoIva: costoIva,
-                    costoTotal: costoBruto + costoIva,
+                    costoTotal: costoTotal,
                     porcentajeImpuesto: porcentajeImpuesto,
                     producto: producto,
                     nproducto: nproducto
@@ -305,7 +306,7 @@ function extractInvoiceData(data) {
                     porcentajeDescuentoDelCosto: 0,
                     valorDescuentoDelCosto: 0,
                     valorImpuestoDelCosto: 0,
-                    costoTotalSinImpuesto: costoTotal,
+                    costoTotalSinImpuesto: costoBruto,
                     costoTotalIncluidoImpuesto: costoTotal,
                     costoTotalNiif: 0,
                     tipoNormaLocalNiif: "A",
