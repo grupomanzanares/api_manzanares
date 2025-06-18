@@ -190,11 +190,18 @@ function extractInvoiceData(data) {
 
                 // Extraer el porcentaje de IVA
                 let porcentajeImpuesto = 0;
-                const taxSubtotal = line["cac:TaxTotal"]?.["cac:TaxSubtotal"];
-                if (taxSubtotal) {
-                    const taxCategory = taxSubtotal["cac:TaxCategory"];
-                    if (taxCategory && taxCategory["cac:TaxScheme"]?.["cbc:ID"] === "01") {
-                        porcentajeImpuesto = parseFloat(taxCategory["cbc:Percent"] || '0');
+                const taxTotal = line["cac:TaxTotal"];
+                if (taxTotal) {
+                    const taxSubtotal = taxTotal["cac:TaxSubtotal"];
+                    if (taxSubtotal) {
+                        const taxCategory = taxSubtotal["cac:TaxCategory"];
+                        if (taxCategory) {
+                            // Verificar si es IVA (ID 01)
+                            const taxScheme = taxCategory["cac:TaxScheme"];
+                            if (taxScheme && taxScheme["cbc:ID"] === "01") {
+                                porcentajeImpuesto = parseFloat(taxCategory["cbc:Percent"] || '0');
+                            }
+                        }
                     }
                 }
 
