@@ -205,7 +205,8 @@ function extractInvoiceData(data) {
                             console.log("DEBUG taxCategory:", JSON.stringify(category, null, 2));
                             const taxScheme = category["cac:TaxScheme"];
                             console.log("DEBUG taxScheme:", JSON.stringify(taxScheme, null, 2));
-                            if (taxScheme && taxScheme["cbc:ID"] === "01") {
+                            const taxId = taxScheme["cbc:ID"]?.toString().padStart(2, '0');
+                            if (taxId === "01" || taxId === "1") {
                                 porcentajeImpuesto = parseFloat(category["cbc:Percent"] || '0');
                                 console.log("DEBUG porcentajeImpuesto encontrado:", porcentajeImpuesto);
                             }
