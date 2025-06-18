@@ -191,15 +191,23 @@ function extractInvoiceData(data) {
                 // Extraer el porcentaje de IVA
                 let porcentajeImpuesto = 0;
                 const taxTotal = line["cac:TaxTotal"];
+                console.log("DEBUG taxTotal:", JSON.stringify(taxTotal, null, 2));
                 if (taxTotal) {
-                    const taxSubtotal = taxTotal["cac:TaxSubtotal"];
-                    if (taxSubtotal) {
+                    const taxSubtotals = Array.isArray(taxTotal["cac:TaxSubtotal"]) ? taxTotal["cac:TaxSubtotal"] : [taxTotal["cac:TaxSubtotal"]];
+                    for (const taxSubtotal of taxSubtotals) {
+                        console.log("DEBUG taxSubtotal:", JSON.stringify(taxSubtotal, null, 2));
+                        if (!taxSubtotal) continue;
                         const taxCategory = taxSubtotal["cac:TaxCategory"];
-                        if (taxCategory) {
-                            // Verificar si es IVA (ID 01)
-                            const taxScheme = taxCategory["cac:TaxScheme"];
+                        if (!taxCategory) continue;
+                        // Puede ser array también
+                        const taxCategories = Array.isArray(taxCategory) ? taxCategory : [taxCategory];
+                        for (const category of taxCategories) {
+                            console.log("DEBUG taxCategory:", JSON.stringify(category, null, 2));
+                            const taxScheme = category["cac:TaxScheme"];
+                            console.log("DEBUG taxScheme:", JSON.stringify(taxScheme, null, 2));
                             if (taxScheme && taxScheme["cbc:ID"] === "01") {
-                                porcentajeImpuesto = parseFloat(taxCategory["cbc:Percent"] || '0');
+                                porcentajeImpuesto = parseFloat(category["cbc:Percent"] || '0');
+                                console.log("DEBUG porcentajeImpuesto encontrado:", porcentajeImpuesto);
                             }
                         }
                     }
