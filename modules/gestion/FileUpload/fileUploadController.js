@@ -186,7 +186,7 @@ function extractInvoiceData(data) {
                 const costoUnitario = typeof priceAmount === 'object' ? 
                     parseFloat(priceAmount["#text"] || '0') : 
                     parseFloat(priceAmount || '0');
-                const costoTotal = cantidad * costoUnitario;
+                const costoBruto = cantidad * costoUnitario;
 
                 // Extraer el porcentaje de IVA
                 let porcentajeImpuesto = 0;
@@ -213,6 +213,9 @@ function extractInvoiceData(data) {
                         }
                     }
                 }
+
+                const costoIva = (costoBruto * porcentajeImpuesto) / 100;
+                
 
                 // Extraer el producto
                 let producto = ""; // valor por defecto
@@ -260,7 +263,9 @@ function extractInvoiceData(data) {
                     numeroItem: index + 1,
                     cantidad: cantidad,
                     costoUnitario: costoUnitario,
-                    costoTotal: costoTotal,
+                    costoBruto : costoBruto,
+                    costoIva: costoIva,
+                    costoTotal: costoBruto + costoIva,
                     porcentajeImpuesto: porcentajeImpuesto,
                     producto: producto,
                     nproducto: nproducto
@@ -296,7 +301,7 @@ function extractInvoiceData(data) {
                     valorImpuestoDelPrecio: 0,
                     precioTotalIncluidoImpuesto: 0,
                     costoUnitario: costoUnitario,
-                    costoTotal: costoTotal,
+                    costoTotal: costoBruto,
                     porcentajeDescuentoDelCosto: 0,
                     valorDescuentoDelCosto: 0,
                     valorImpuestoDelCosto: 0,
