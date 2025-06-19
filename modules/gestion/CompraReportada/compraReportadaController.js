@@ -7,6 +7,7 @@ import registroDian from "../RegistroDian/registroDian.js";
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import CompraReportadaDetalle from "../CompraReportadaDetalle/compraReportadaDetalle.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,7 +73,7 @@ const getComprasReportadas = async (req, res) => {
     }
 };
 
-const getCompraReportada = async (req, res) => {
+const getCompraReportadaJson = async (req, res) => {
     try {
         req = matchedData(req)
         const { id } = req
@@ -157,6 +158,84 @@ const getCompraReportada = async (req, res) => {
         console.error(error)
     }
 }
+
+
+const getCompraReportada = async (req, res) => {
+    try {
+        req = matchedData(req)
+        const { id } = req
+        const data = await compraReportada.findOne({
+            where: { id: id, habilitado: true },
+            include: [
+                {
+                    model: comprasTipo,
+                    attributes: ['id', 'nombre'],
+                },
+                {
+                    model: comprasEstado,
+                    attributes: ['id', 'nombre'],
+                },
+                {
+                    model: User, 
+                    as: 'responsable',
+                    attributes: ["name", "email", "celphone"]
+                },
+                {
+                    model: empresa,
+                    as: 'empresaInfo',
+                    attributes: ['id', 'nombre', 'nit'],
+                }
+            ]
+        })
+        if (!data) {
+            return res.status(404).json({ message: `${entity} no encontrado(a) ó inactivo (a)` });
+        }
+
+
+         // Cargar empresas y centros de costo
+         const [empresas, centrosCosto] = await Promise.all([
+            empresa.findAll({ attributes: ['id', 'nit'] }),
+            ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
+        ]);
+
+        // Buscar el ID de la empresa a partir del NIT
+        const empresaEncontrada = empresas.find(e => e.nit === data.empresa);
+        const empresaId = empresaEncontrada?.id;
+
+        // Buscar el nombre del centro de costo por código y empresaId
+        const ccostoEncontrado = centrosCosto.find(c =>
+            c.codigo === data.ccosto && c.empresaId === empresaId
+        );
+        
+        // Buscar detalles por numeroFactura
+        const detalles = await CompraReportadaDetalle.findAll({
+            where: { numeroFactura: data.numero }
+        });
+
+        // Actualizar los detalles que tengan compraReportadaId en null
+        const detallesSinId = detalles.filter(det => !det.compraReportadaId);
+        if (detallesSinId.length > 0) {
+            await Promise.all(detallesSinId.map(det =>
+                det.update({ compraReportadaId: data.id })
+            ));
+        }
+
+        // Puedes volver a consultar los detalles si quieres asegurarte de tener los datos actualizados
+        // const detallesActualizados = await CompraReportadaDetalle.findAll({ where: { numeroFactura: data.numero } });
+
+        // Armar la respuesta
+        const resultado = {
+            ...data.toJSON(),
+            items: detalles.map(det => det.toJSON())
+        };
+
+        res.status(200).json(resultado);
+    } catch (error) {
+        handleHttpError(res, `Error al traer ${entity}`);
+        console.error(error);
+    }
+}
+
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
