@@ -186,29 +186,39 @@ function extractInvoiceData(data) {
                 const costoUnitario = typeof priceAmount === 'object' ? 
                     parseFloat(priceAmount["#text"] || '0') : 
                     parseFloat(priceAmount || '0');
-                const costoBruto = cantidad * costoUnitario;
 
                 // Extraer el porcentaje de IVA
+                let costoBruto = 0;
                 let porcentajeImpuesto = 0;
                 const taxTotal = line["cac:TaxTotal"];
                 console.log("DEBUG taxTotal:", JSON.stringify(taxTotal, null, 2));
                 if (taxTotal) {
+                    // Normalmente por línea solo hay un TaxSubtotal
                     const taxSubtotals = Array.isArray(taxTotal["cac:TaxSubtotal"]) ? taxTotal["cac:TaxSubtotal"] : [taxTotal["cac:TaxSubtotal"]];
-                    for (const taxSubtotal of taxSubtotals) {
-                        console.log("DEBUG taxSubtotal:", JSON.stringify(taxSubtotal, null, 2));
-                        if (!taxSubtotal) continue;
+                    if (taxSubtotals.length > 0) {
+                        const taxSubtotal = taxSubtotals[0];
+                        // Extraer costoBruto (TaxableAmount)
+                        if (taxSubtotal && taxSubtotal["cbc:TaxableAmount"]) {
+                            if (typeof taxSubtotal["cbc:TaxableAmount"] === "object") {
+                                costoBruto = Number(taxSubtotal["cbc:TaxableAmount"]["#text"] || 0);
+                            } else {
+                                costoBruto = Number(taxSubtotal["cbc:TaxableAmount"]);
+                            }
+                            console.log("DEBUG costoBruto (TaxableAmount):", costoBruto);
+                        }
+                        // Extraer porcentaje de IVA (si aplica)
                         const taxCategory = taxSubtotal["cac:TaxCategory"];
-                        if (!taxCategory) continue;
-                        // Puede ser array también
-                        const taxCategories = Array.isArray(taxCategory) ? taxCategory : [taxCategory];
-                        for (const category of taxCategories) {
-                            console.log("DEBUG taxCategory:", JSON.stringify(category, null, 2));
-                            const taxScheme = category["cac:TaxScheme"];
-                            console.log("DEBUG taxScheme:", JSON.stringify(taxScheme, null, 2));
-                            const taxId = taxScheme["cbc:ID"]?.toString().padStart(2, '0');
-                            if (taxId === "01" || taxId === "1") {
-                                porcentajeImpuesto = parseFloat(category["cbc:Percent"] || '0');
-                                console.log("DEBUG porcentajeImpuesto encontrado:", porcentajeImpuesto);
+                        if (taxCategory) {
+                            const taxCategories = Array.isArray(taxCategory) ? taxCategory : [taxCategory];
+                            for (const category of taxCategories) {
+                                console.log("DEBUG taxCategory:", JSON.stringify(category, null, 2));
+                                const taxScheme = category["cac:TaxScheme"];
+                                console.log("DEBUG taxScheme:", JSON.stringify(taxScheme, null, 2));
+                                const taxId = taxScheme["cbc:ID"]?.toString().padStart(2, '0');
+                                if (taxId === "01" || taxId === "1") {
+                                    porcentajeImpuesto = parseFloat(category["cbc:Percent"] || '0');
+                                    console.log("DEBUG porcentajeImpuesto encontrado:", porcentajeImpuesto);
+                                }
                             }
                         }
                     }
