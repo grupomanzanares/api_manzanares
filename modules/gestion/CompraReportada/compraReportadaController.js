@@ -325,7 +325,7 @@ const updateCompraReportada = async (req, res) => {
                 });
             }
 
-            // --- Lógica adicional solicitada ---
+            // --- Lógica adicional solicitada ---.....
             // Actualizar CentroDeCosto en detalles si es null
             await CompraReportadaDetalle.update(
                 { CentroDeCosto: updateRegistro.ccosto },
