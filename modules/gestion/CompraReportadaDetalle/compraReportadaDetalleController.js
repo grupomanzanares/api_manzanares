@@ -76,7 +76,8 @@ const createDetalle = async (req, res) => {
 // Actualizar detalle
 const updateDetalle = async (req, res) => {
     try {
-        const { id, ...body } = matchedData(req);
+        const id = req.params.id;
+        const body = req.body;
         const data = await CompraReportadaDetalle.update(body, {
             where: { id }
         });
