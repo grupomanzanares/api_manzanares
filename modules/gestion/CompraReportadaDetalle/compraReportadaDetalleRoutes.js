@@ -52,6 +52,6 @@ router.get("/:id", apiAuth, getDetalle);
 router.get("/compra/:compraReportadaId", apiAuth,getDetallesByCompra);
 router.post("/", apiAuth, createDetalle);
 router.put("/:id", apiAuth,updateValidation, updateDetalle);
-router.delete("/:id", apiAuth, validateRequest, deleteDetalle);
+//router.delete("/:id", apiAuth, validateRequest, deleteDetalle);
 
 export default router; 
