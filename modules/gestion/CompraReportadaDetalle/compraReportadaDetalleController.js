@@ -76,23 +76,25 @@ const createDetalle = async (req, res) => {
 // Actualizar detalle
 const updateDetalle = async (req, res) => {
     try {
-        const id = req.params.id;
-        const body = req.body;
-        const data = await CompraReportadaDetalle.update(body, {
-            where: { id }
+        const { compraReportadaId } = req.params;
+        const body = req.body; // Campos a actualizar
+
+        const [updatedRows] = await CompraReportadaDetalle.update(body, {
+            where: { compraReportadaId }
         });
 
-        if (data[0] === 0) {
+        if (updatedRows === 0) {
             return res.status(404).json({
-                message: `${entity} no encontrado(a)`
+                message: `No se encontraron registros para compraReportadaId ${compraReportadaId}`
             });
         }
 
         res.status(200).json({
-            message: `${entity} actualizado(a) correctamente`
+            message: `Registros actualizados correctamente`,
+            updatedRows
         });
     } catch (error) {
-        handleHttpError(res, `Error al actualizar ${entity}`);
+        handleHttpError(res, `Error al actualizar registros`);
     }
 };
 

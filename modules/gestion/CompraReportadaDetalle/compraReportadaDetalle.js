@@ -107,3 +107,27 @@ const CompraReportadaDetalle = db.define("CompraReportadaDetalle", {
 
 
 export default CompraReportadaDetalle; 
+
+const updateDetallesByCompra = async (req, res) => {
+    try {
+        const { compraReportadaId } = req.params;
+        const body = req.body; // Campos a actualizar
+
+        const [updatedRows] = await CompraReportadaDetalle.update(body, {
+            where: { compraReportadaId }
+        });
+
+        if (updatedRows === 0) {
+            return res.status(404).json({
+                message: `No se encontraron registros para compraReportadaId ${compraReportadaId}`
+            });
+        }
+
+        res.status(200).json({
+            message: `Registros actualizados correctamente`,
+            updatedRows
+        });
+    } catch (error) {
+        handleHttpError(res, `Error al actualizar registros`);
+    }
+}; 
