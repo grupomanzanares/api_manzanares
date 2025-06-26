@@ -21,6 +21,7 @@ import compraReportadaRoutes from './modules/gestion/CompraReportada/compraRepor
 import matrizAutorizacionesRoutes from './modules/gestion/MatrizAutorizaciones/matrizAutorizacionesRoutes.js';
 import registroDianRoutes from './modules/gestion/RegistroDian/registroDianRoutes.js';
 import fileUploadRoutes from './modules/gestion/FileUpload/fileUploadRoutes.js';
+import compraReportadaDetalleRoutes from './modules/gestion/CompraReportadaDetalle/compraReportadaDetalleRoutes.js';
 
 /*** Crear app   */
 const app = express();
@@ -63,6 +64,7 @@ app.use('/api_manzanares/compras_reportadas', compraReportadaRoutes);
 app.use('/api_manzanares/matriz_autorizaciones', matrizAutorizacionesRoutes);
 app.use('/api_manzanares/registros_dian', registroDianRoutes);
 app.use('/api_manzanares/files', fileUploadRoutes);
+app.use('/api_manzanares/compras_reportadas_detalle', compraReportadaDetalleRoutes);
 
 // hola
 /***
