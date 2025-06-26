@@ -8,7 +8,7 @@ const entity = "CompraReportadaDetalle";
 const getDetalles = async (req, res) => {
     try {
         const registros = await CompraReportadaDetalle.findAll({
-            where: { estado: true }
+        
         });
         res.json(registros);
     } catch (error) {
@@ -23,8 +23,7 @@ const getDetalle = async (req, res) => {
         const { id } = req;
         const data = await CompraReportadaDetalle.findOne({
             where: {
-                id: id,
-                estado: true
+                id: id
             }
         });
 
@@ -53,8 +52,7 @@ const getDetallesByCompra = async (req, res) => {
 
         const detalles = await CompraReportadaDetalle.findAll({
             where: {
-                compraReportadaId: compraReportadaId,
-                estado: true
+                compraReportadaId: compraReportadaId
             }
         });
 
