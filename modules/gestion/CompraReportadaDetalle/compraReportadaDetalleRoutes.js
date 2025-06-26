@@ -2,7 +2,7 @@
 import express from 'express';
 
 import { body, param } from "express-validator";
-import { validateRequest } from "../../../middlewares/validateRequest.js";
+//import { validateRequest } from "../../../middlewares/validateRequest.js";
 import {
     getDetalles,
     getDetalle,
