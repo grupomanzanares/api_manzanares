@@ -45,12 +45,12 @@ const CompraReportadaDetalle = db.define("CompraReportadaDetalle", {
         allowNull: false
     },
     producto: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: true // Puede ser null inicialmente
     },
     nombreProducto: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     CentroDeCosto: {
         type: DataTypes.STRING(20),
