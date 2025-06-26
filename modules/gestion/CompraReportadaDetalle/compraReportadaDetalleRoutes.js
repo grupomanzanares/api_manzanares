@@ -3,6 +3,7 @@ import express from 'express';
 
 import { body, param } from "express-validator";
 //import { validateRequest } from "../../../middlewares/validateRequest.js";
+import { apiAuth } from '../../../auth/middleware/apiauth.js';
 import {
     getDetalles,
     getDetalle,
