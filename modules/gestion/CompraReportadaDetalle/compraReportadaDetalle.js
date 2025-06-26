@@ -53,7 +53,7 @@ const CompraReportadaDetalle = db.define("CompraReportadaDetalle", {
         allowNull: false
     },
     CentroDeCosto: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING(20),
         allowNull: true // Puede ser null inicialmente
     },
     cantidad: {

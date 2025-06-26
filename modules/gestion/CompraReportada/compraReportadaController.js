@@ -324,6 +324,19 @@ const updateCompraReportada = async (req, res) => {
                     userMod: updateRegistro.userMod
                 });
             }
+
+            // --- Lógica adicional solicitada ---
+            // Actualizar CentroDeCosto en detalles si es null
+            await CompraReportadaDetalle.update(
+                { CentroDeCosto: updateRegistro.ccosto },
+                {
+                    where: {
+                        compraReportadaId: updateRegistro.id,
+                        CentroDeCosto: null
+                    }
+                }
+            );
+            // --- Fin lógica adicional ---
         }
 
         // ✅ Enviar correo solo si estadoId es 2
