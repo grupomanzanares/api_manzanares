@@ -75,26 +75,35 @@ const createDetalle = async (req, res) => {
 
 // Actualizar detalle
 const updateDetalle = async (req, res) => {
+    const { compraReportadaId } = req.params;
+    const { items } = req.body;
+
+    if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ message: "No hay items para actualizar" });
+    }
+
     try {
-        const { compraReportadaId } = req.params;
-        const body = req.body; // Campos a actualizar
-
-        const [updatedRows] = await CompraReportadaDetalle.update(body, {
-            where: { compraReportadaId }
-        });
-
-        if (updatedRows === 0) {
-            return res.status(404).json({
-                message: `No se encontraron registros para compraReportadaId ${compraReportadaId}`
-            });
+        // Validar que todos los items correspondan al compraReportadaId de la ruta
+        const valid = items.every(item => item.compraReportadaId == compraReportadaId);
+        if (!valid) {
+            return res.status(400).json({ message: "Todos los items deben tener el mismo compraReportadaId que la URL" });
         }
 
-        res.status(200).json({
-            message: `Registros actualizados correctamente`,
-            updatedRows
-        });
+        // Actualizar cada item en paralelo
+        await Promise.all(items.map(async (item) => {
+            const { id, CentroDeCosto } = item;
+            if (!id || !CentroDeCosto) return;
+
+            await CompraReportadaDetalle.update(
+                { CentroDeCosto },
+                { where: { id, compraReportadaId } }
+            );
+        }));
+
+        return res.json({ message: "Centros de costo actualizados correctamente" });
     } catch (error) {
-        handleHttpError(res, `Error al actualizar registros`);
+        console.error(error);
+        return res.status(500).json({ message: "Error actualizando centros de costo", error });
     }
 };
 
