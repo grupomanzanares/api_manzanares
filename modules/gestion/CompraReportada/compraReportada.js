@@ -96,6 +96,30 @@ const compraReportada = db.define('compras_reportadas', {
     userMod: {
         type: DataTypes.STRING(50),
         allowNull: false
+    },
+    fechaVencimiento: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    fechaAutorizacion: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    fechaContabilizacion: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    fechaTesoreria: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    tipoDctoErp: {
+        type: DataTypes.STRING(4),
+        allowNull: true
+    },
+    numeroErp: {
+        type: DataTypes.STRING(20),
+        allowNull: true
     }
 },
 {
