@@ -8,6 +8,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import CompraReportadaDetalle from "../CompraReportadaDetalle/compraReportadaDetalle.js";
+import { Op } from 'sequelize';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -634,24 +635,25 @@ const getComprasPorAutorizar = async (req, res) => {
         const registros = await compraReportada.findAll({
             where: { 
                 habilitado: true,
-                estadoId: 2 // Estado por autorizar
+                estadoId: 2,
+                responsableId: { [Op.ne]: null } // Solo con responsable asignado
             },
             include: [
                 {
                     model: User, 
                     as: 'responsable',
-                    attributes: ["name", "celphone"]
+                    attributes: ["id", "name", "celphone"]
                 }
             ]
         });
 
-        // Agrupar por responsable
+        // Agrupar por responsableId
         const resumen = {};
         registros.forEach(registro => {
             const responsable = registro.responsable;
-            if (!responsable) return; // Si no hay responsable, omitir
+            if (!responsable) return;
 
-            const key = responsable.celphone; // O usa responsable.id si prefieres
+            const key = responsable.id;
             if (!resumen[key]) {
                 resumen[key] = {
                     name: responsable.name,
@@ -662,7 +664,6 @@ const getComprasPorAutorizar = async (req, res) => {
             resumen[key].cantidad += 1;
         });
 
-        // Convertir a array
         const resultado = Object.values(resumen);
 
         res.json(resultado);
