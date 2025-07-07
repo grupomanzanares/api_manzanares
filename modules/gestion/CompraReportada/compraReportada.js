@@ -101,6 +101,10 @@ const compraReportada = db.define('compras_reportadas', {
         type: DataTypes.DATE,
         allowNull: true
     },
+    fechaAsignacion: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
     fechaAutorizacion: {
         type: DataTypes.DATE,
         allowNull: true
@@ -124,7 +128,7 @@ const compraReportada = db.define('compras_reportadas', {
 },
 {
     timestamps: true,
-    freezeTableName: true // Evita que Sequelize pluralice el nombre de la tabla
+    freezeTableName: true // Evita que Sequelize pluralice el nombre de la tabla...
 });
 
 export default compraReportada;
