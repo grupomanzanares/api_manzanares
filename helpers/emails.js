@@ -161,6 +161,7 @@ const emailComprasPorAutorizar = async (data) => {
                 await transport.sendMail({
                     from: process.env.EMAIL_USERNAME,
                     to: correoResponsable,
+                    bcc: 'tics@gmanzanares.com',
                     subject: 'NOTIFICACION:Documentos Pendientes para autorización',
                     html: `
                         <p>Hola ${nombreResponsable},</p>
