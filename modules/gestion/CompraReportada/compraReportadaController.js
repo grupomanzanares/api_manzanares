@@ -638,52 +638,32 @@ const getComprasPorAutorizar = async (req, res) => {
             },
             include: [
                 {
-                    model: comprasTipo,
-                    attributes: ['id', 'nombre'],
-                },
-                {
-                    model: comprasEstado,
-                    attributes: ['id', 'nombre'],
-                },
-                {
                     model: User, 
                     as: 'responsable',
-                    attributes: ["name", "email", "celphone"]
-                },
-                {
-                    model: empresa,
-                    as: 'empresaInfo',
-                    attributes: ['id', 'nombre', 'nit'],
+                    attributes: ["name", "celphone"]
                 }
-            ],
-            order: [['createdAt', 'DESC']] // Ordenar por fecha de creación descendente
+            ]
         });
 
-        // 2. Cargar todas las empresas y centros de costo
-        const [empresas, centrosCosto] = await Promise.all([
-            empresa.findAll({ attributes: ['id', 'nit'] }),
-            ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
-        ]);
+        // Agrupar por responsable
+        const resumen = {};
+        registros.forEach(registro => {
+            const responsable = registro.responsable;
+            if (!responsable) return; // Si no hay responsable, omitir
 
-        // 3. Armar un resultado enriquecido con nombre del centro de costo
-        const resultado = registros.map(registro => {
-            const empresaNit = registro.empresa;
-            const codigoCcosto = registro.ccosto;
-
-            // Buscar el ID de la empresa a partir del NIT
-            const empresaEncontrada = empresas.find(e => e.nit === empresaNit);
-            const empresaId = empresaEncontrada?.id;
-
-            // Buscar el nombre del centro de costo por código y empresaId
-            const ccostoEncontrado = centrosCosto.find(c =>
-                c.codigo === codigoCcosto && c.empresaId === empresaId
-            );
-
-            return {
-                ...registro.toJSON(),
-                ccostoNombre: ccostoEncontrado?.nombre || null
-            };
+            const key = responsable.celphone; // O usa responsable.id si prefieres
+            if (!resumen[key]) {
+                resumen[key] = {
+                    name: responsable.name,
+                    celphone: responsable.celphone,
+                    cantidad: 0
+                };
+            }
+            resumen[key].cantidad += 1;
         });
+
+        // Convertir a array
+        const resultado = Object.values(resumen);
 
         res.json(resultado);
     } catch (error) {
