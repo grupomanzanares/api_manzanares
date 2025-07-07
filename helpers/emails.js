@@ -130,8 +130,54 @@ const emailNotAutorizacion = async (data) => {
         }
     }
 
+
+const emailComprasPorAutorizar = async (data) => {
+        const link = 'https://gmanzanares.com.co/gestion/auth'
+        console.log ("data recibida para correo", data);
+    
+            const transport = nodemailer.createTransport({
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT,
+                secureConnection: true,
+                debug: true,
+                auth: {
+                    user: process.env.EMAIL_USERNAME,
+                    pass: process.env.EMAIL_PASSWORD
+                },
+                tls: {
+                    rejectUnauthorized: false // ⚠ Desactiva la verificación SSL (No recomendado en producción)
+                }
+            });
+        
+            const {
+                correoResponsable,
+                nombreResponsable,
+                CantidadFacturasPendientes
+            } = data;
+        
+            /**  Enviar email */
+            try {
+                // Enviar al responsable
+                await transport.sendMail({
+                    from: process.env.EMAIL_USERNAME,
+                    to: correoResponsable,
+                    subject: 'NOTIFICACION:Documentos Pendientes para autorización',
+                    html: `
+                        <p>Hola ${nombreResponsable},</p>
+                        <p>Tienes ${CantidadFacturasPendientes} documentos pendientes para autorizar</p>
+                        <p><a href="${link}">Haz clic aquí para gestionarlas</a></p>
+                    `
+                });
+        
+                console.log('📧 Correo enviado a responsable:', correoResponsable);
+            } catch (error) {
+                console.error('❌ Error enviando correo:', error);
+            }
+}
+
 export {
     emailRegister,
     emailRecoverPassword,
-    emailNotAutorizacion
+    emailNotAutorizacion,
+    emailComprasPorAutorizar
 }

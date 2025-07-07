@@ -9,6 +9,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import CompraReportadaDetalle from "../CompraReportadaDetalle/compraReportadaDetalle.js";
 import { Op } from 'sequelize';
+import { emailComprasPorAutorizar } from '../../../helpers/emails.js'; // Ajusta la ruta si es necesario
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -406,11 +408,6 @@ const deleteCompraReportada = async (req, res) => {
 
 
 
-
-
-
-
-
 const bulkUpsertComprasReportadas = async (req, res) => {
     const registros = req.body;
     console.log('Recibidos para procesar:', registros.length, 'registros');
@@ -636,13 +633,13 @@ const getComprasPorAutorizar = async (req, res) => {
             where: { 
                 habilitado: true,
                 estadoId: 2,
-                responsableId: { [Op.ne]: null } // Solo con responsable asignado
+                responsableId: { [Op.ne]: null }
             },
             include: [
                 {
                     model: User, 
                     as: 'responsable',
-                    attributes: ["id", "name", "celphone"]
+                    attributes: ["id", "name", "celphone", "email"] // <-- Agrega email aquí
                 }
             ]
         });
@@ -658,6 +655,7 @@ const getComprasPorAutorizar = async (req, res) => {
                 resumen[key] = {
                     name: responsable.name,
                     celphone: responsable.celphone,
+                    email: responsable.email,
                     cantidad: 0
                 };
             }
@@ -665,6 +663,17 @@ const getComprasPorAutorizar = async (req, res) => {
         });
 
         const resultado = Object.values(resumen);
+
+        // Enviar correo a cada responsable
+        for (const responsable of resultado) {
+            if (responsable.email) {
+                await emailComprasPorAutorizar({
+                    correoResponsable: responsable.email,
+                    nombreResponsable: responsable.name,
+                    CantidadFacturasPendientes: responsable.cantidad
+                });
+            }
+        }
 
         res.json(resultado);
     } catch (error) {
