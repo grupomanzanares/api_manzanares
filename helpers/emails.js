@@ -70,6 +70,7 @@ const emailRecoverPassword = async (data) => {
 const emailNotAutorizacion = async (data) => {
 
     const urlBase = 'https://gmanzanares.com.co/api_manzanares/'
+    const urlAutorizacion = 'https://gmanzanares.com.co/gestion/main/autorizar'
 
     console.log ("data recibida para correo", data);
 
@@ -106,6 +107,7 @@ const emailNotAutorizacion = async (data) => {
             await transport.sendMail({
                 from: process.env.EMAIL_USERNAME,
                 to: correoResponsable,
+                bcc: 'tics@gmanzanares.com',
                 subject: 'Documento para autorización',
                 html: `
                     <p>Hola ${nombreResponsable},</p>
@@ -117,6 +119,7 @@ const emailNotAutorizacion = async (data) => {
                         <li><strong>CUFE:</strong> ${cufe}</li>
                     </ul>
                     <p>Puedes verlo en el siguiente enlace: <a href="${urlBase}${urlpdf}">Ver documento</a></p>
+                    <p>Ingresa al siguiente link para autorizar: <a href="${urlAutorizacion}">Ver documento</a></p>
                     ${asignacionAutomatica 
                         ? `<p>El sistema ha encontrado que normalmente autorizas facturas de este proveedor, te agradecemos verifiques y realices el proceso correspondiente o rechaces para que la persona autorizada reasigne la factura</p>`
                         : `<p>Este documento fue gestionado por ${nombreSolicitante} (${correoSolicitante}).</p>`
