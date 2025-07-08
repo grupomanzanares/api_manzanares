@@ -111,7 +111,7 @@ cron.schedule('0 8 * * *', () => {
   }
 });
 
-// Todos los días a las 8:00 am, pero solo ejecuta si es primer día hábil
+// Todos los días a las 8:00 am, pero solo ejecuta si es primer día hábil..
 cron.schedule('0 8 * * *', () => {
   const hoy = new Date();
   if (esPrimerDiaHabilDelMes(hoy)) {
