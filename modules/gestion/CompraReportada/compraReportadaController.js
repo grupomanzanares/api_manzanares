@@ -665,15 +665,15 @@ const getComprasPorAutorizar = async (req, res) => {
         const resultado = Object.values(resumen);
 
         // Enviar correo a cada responsable
-        for (const responsable of resultado) {
-            if (responsable.email) {
-                await emailComprasPorAutorizar({
-                    correoResponsable: responsable.email,
-                    nombreResponsable: responsable.name,
-                    CantidadFacturasPendientes: responsable.cantidad
-                });
-            }
-        }
+        //for (const responsable of resultado) {
+          //  if (responsable.email) {
+            //    await emailRecordatorioComprasPorAutorizar({
+              //      correoResponsable: responsable.email,
+                //    nombreResponsable: responsable.name,
+                  //  CantidadFacturasPendientes: responsable.cantidad
+                //});
+            //}
+        //}
 
         res.json(resultado);
     } catch (error) {
