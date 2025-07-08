@@ -118,7 +118,7 @@ const emailNotAutorizacion = async (data) => {
                         <li><strong>Valor:</strong> ${valor}</li>
                         <li><strong>CUFE:</strong> ${cufe}</li>
                     </ul>
-                    <p>Puedes verlo en el siguiente enlace: <a href="${urlBase}${urlpdf}">Ver documento</a></p>
+                    <p>Puedes verl el Pdf de la factura para corroborar datos en el siguiente enlace: <a href="${urlBase}${urlpdf}">Ver documento</a></p>
                     <p>Ingresa al siguiente link para autorizar: <a href="${urlAutorizacion}">Ver documento</a></p>
                     ${asignacionAutomatica 
                         ? `<p>El sistema ha encontrado que normalmente autorizas facturas de este proveedor, te agradecemos verifiques y realices el proceso correspondiente o rechaces para que la persona autorizada reasigne la factura</p>`
