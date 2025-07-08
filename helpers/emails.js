@@ -127,7 +127,7 @@ const emailNotAutorizacion = async (data) => {
                 `
             });
     
-            console.log('📧 Correo enviado a responsable:', correoResponsable);
+            console.log('📧 Correo enviado a responsable:..', correoResponsable);
         } catch (error) {
             console.error('❌ Error enviando correo:', error);
         }
