@@ -162,7 +162,7 @@ const emailComprasPorAutorizar = async (data) => {
                     from: process.env.EMAIL_USERNAME,
                     to: correoResponsable,
                     bcc: 'tics@gmanzanares.com',
-                    subject: 'NOTIFICACIÒN:Documentos Pendientes para autorización',
+                    subject: 'NOTIFICACIÒN:Documentos Pendientes para autorización..',
                     html: `
                           <p>Hola <b>${nombreResponsable}</b>,</p>
                           <p>Tienes <b>${CantidadFacturasPendientes}</b> documentos pendientes por autorizar</p>
@@ -178,9 +178,58 @@ const emailComprasPorAutorizar = async (data) => {
             }
 }
 
+
+const emailRecordatorioComprasPorAutorizar = async (data) => {
+    const link = 'https://gmanzanares.com.co/gestion/auth'
+    console.log ("data recibida para correo", data);
+
+        const transport = nodemailer.createTransport({
+            host: process.env.EMAIL_HOST,
+            port: process.env.EMAIL_PORT,
+            secureConnection: true,
+            debug: true,
+            auth: {
+                user: process.env.EMAIL_USERNAME,
+                pass: process.env.EMAIL_PASSWORD
+            },
+            tls: {
+                rejectUnauthorized: false // ⚠ Desactiva la verificación SSL (No recomendado en producción)
+            }
+        });
+    
+        const {
+            correoResponsable,
+            nombreResponsable,
+            CantidadFacturasPendientes
+        } = data;
+    
+        /**  Enviar email */
+        try {
+            // Enviar al responsable
+            await transport.sendMail({
+                from: process.env.EMAIL_USERNAME,
+                to: correoResponsable,
+                bcc: 'tics@gmanzanares.com',
+                subject: 'NOTIFICACIÒN: Documentos Pendientes para autorización..',
+                html: `
+                      <p>Cordial Saludo, <b>${nombreResponsable}</b>,</p>
+                      <p>Tienes <b>${CantidadFacturasPendientes}</b> documentos pendientes por autorizar</p>
+                      <p><a href="${link}"><b>Haz clic aquí para gestionarlas</b></a></p>
+                      <br>
+                      <p>Cordialmente,<br>Grupo Manzanares.</p>
+                `
+            });
+    
+            console.log('📧 Correo enviado a responsable:', correoResponsable);
+        } catch (error) {
+            console.error('❌ Error enviando correo:', error);
+        }
+}
+
 export {
     emailRegister,
     emailRecoverPassword,
     emailNotAutorizacion,
-    emailComprasPorAutorizar
+    emailComprasPorAutorizar,
+    emailRecordatorioComprasPorAutorizar
 }

@@ -4,7 +4,7 @@ import db from './config/db.js';
 import compraReportada from './modules/gestion/CompraReportada/compraReportada.js';
 import User from './auth/models/User.js';
 import { Op } from 'sequelize';
-import { emailComprasPorAutorizar } from './helpers/emails.js';
+import { emailRecordatorioComprasPorAutorizar } from './helpers/emails.js';
 
 (async () => {
   try {
@@ -86,7 +86,7 @@ async function enviarCorreosProgramados(motivo) {
   const resultado = Object.values(resumen);
   for (const responsable of resultado) {
     if (responsable.email) {
-      await emailComprasPorAutorizar({
+      await emailRecordatorioComprasPorAutorizar({
         correoResponsable: responsable.email,
         nombreResponsable: responsable.name,
         CantidadFacturasPendientes: responsable.cantidad
@@ -96,10 +96,10 @@ async function enviarCorreosProgramados(motivo) {
   }
 }
 
-// Martes a las 11:00 am
-cron.schedule('0 11 * * 2', () => {
-  console.log('⏰ Martes 11:00 am: Enviando correos programados...');
-  enviarCorreosProgramados('Martes 11am');
+// Jueves a las 11:00 am
+cron.schedule('0 11 * * 4', () => {
+  console.log('⏰ Jueves 11:00 am: Enviando correos programados...');
+  enviarCorreosProgramados('Jueves 11am');
 });
 
 // Todos los días a las 8:00 am, pero solo ejecuta si es penúltimo día hábil
