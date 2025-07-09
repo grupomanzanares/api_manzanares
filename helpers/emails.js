@@ -124,6 +124,7 @@ const emailNotAutorizacion = async (data) => {
                         ? `<p>El sistema ha encontrado que normalmente autorizas facturas de este proveedor, te agradecemos verifiques y realices el proceso correspondiente o rechaces para que la persona autorizada reasigne la factura</p>`
                         : `<p>Este documento fue gestionado por ${nombreSolicitante} (${correoSolicitante}).</p>`
                     }
+                    <p>Cordialmente,<br>Grupo Manzanares.</p>
                 `
             });
     
