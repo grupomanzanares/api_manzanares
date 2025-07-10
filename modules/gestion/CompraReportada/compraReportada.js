@@ -60,17 +60,17 @@ const compraReportada = db.define('compras_reportadas', {
     },
 
     observacionResponsable: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(500),
         allowNull: true
     },
 
     observacionContable: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(500),
         allowNull: true
     },
 
     observacionTesoreria: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(500),
         allowNull: true
     },
 
