@@ -214,10 +214,10 @@ const emailRecordatorioComprasPorAutorizar = async (data) => {
                 from: process.env.EMAIL_USERNAME,
                 to: correoResponsable,
                 bcc: 'tics@gmanzanares.com',
-                subject: 'NOTIFICACIÒN: Documentos Pendientes para autorización..',
+                subject: 'NOTIFICACIóN: Documentos Pendientes para autorización..',
                 html: `
                       <p>Cordial Saludo, <b>${nombreResponsable}</b>,</p>
-                      <p>Tienes <b>${CantidadFacturasPendientes}</b> documentos pendientes por autorizar</p>
+                      <p>Tienes <b>${CantidadFacturasPendientes}</b> documentos pendientes por autorizar.</p>
                       <p><a href="${link}"><b>Haz clic aquí para gestionarlas</b></a></p>
                       <br>
                       <p>Cordialmente,<br>Grupo Manzanares.</p>
