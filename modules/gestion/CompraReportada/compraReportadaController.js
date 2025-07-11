@@ -1,7 +1,7 @@
 import { matchedData } from "express-validator";
 import { handleHttpError } from "../../../helpers/httperror.js";
 import { compraReportada, comprasEstado, comprasTipo, empresa, User, matrizAutorizaciones } from "../gestionRelations.js";
-import { emailNotAutorizacion } from "../../../helpers/emails.js";
+import { emailNotAutorizacion, emailCompraAutorizada } from "../../../helpers/emails.js";
 import { ccosto } from "../../maestras/masterRelations.js";
 import registroDian from "../RegistroDian/registroDian.js";
 import fs from 'fs/promises';
@@ -371,6 +371,37 @@ const updateCompraReportada = async (req, res) => {
                 nombreResponsable: usuarioResponsable?.name
             });
         }
+
+
+        // ✅ Enviar correo solo si fue autorizado
+        if (updateRegistro.estadoId == 3) {
+            // Buscar el usuario que autorizó (solicitante)
+            const usuarioModifico = await User.findOne({ where: { identificacion: updateRegistro.userMod }, attributes: ['email', 'name'] });
+            // Buscar el usuario con rolId 2 (recepción)
+            const usuarioRecepcion = await User.findOne({ where: { rolId: 2 }, attributes: ['email', 'name'] });
+
+            // Validar si se encontró la información
+            if (!usuarioModifico || !usuarioRecepcion) {
+                return res.status(500).json({
+                    message: 'No se pudo encontrar la información de los usuarios para el envío de correo.'
+                });
+            }
+
+            emailCompraAutorizada({
+                tipo: updateRegistro.tipo,
+                numero: updateRegistro.numero,
+                valor: updateRegistro.valor,
+                cufe: updateRegistro.cufe,
+                urlpdf: updateRegistro.urlPdf,
+                responsableId: usuarioRecepcion.id,
+                userMod: updateRegistro.userMod,
+                correoSolicitante: usuarioModifico?.email,
+                nombreSolicitante: usuarioModifico?.name,
+                correoResponsable: usuarioRecepcion?.email,
+                nombreResponsable: usuarioRecepcion?.name
+            });
+        }
+
 
         res.status(200).json({
             message: ` ${entity} actualizado correctamente `,

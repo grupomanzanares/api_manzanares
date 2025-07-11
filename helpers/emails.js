@@ -135,6 +135,72 @@ const emailNotAutorizacion = async (data) => {
     }
 
 
+
+const emailCompraAutorizada = async (data) => {
+
+        const urlBase = 'https://gmanzanares.com.co/api_manzanares/'
+        const urlAutorizacion = 'https://gmanzanares.com.co/gestion/main/autorizar'
+    
+        console.log ("data recibida para correo", data);
+    
+            const transport = nodemailer.createTransport({
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT,
+                secureConnection: true,
+                debug: true,
+                auth: {
+                    user: process.env.EMAIL_USERNAME,
+                    pass: process.env.EMAIL_PASSWORD
+                },
+                tls: {
+                    rejectUnauthorized: false // ⚠ Desactiva la verificación SSL (No recomendado en producción)
+                }
+            });
+        
+            const {
+                tipo,
+                numero,
+                valor,
+                cufe,
+                urlpdf,
+                correoSolicitante,
+                nombreSolicitante,
+                correoResponsable,
+                nombreResponsable
+            } = data;
+        
+            /**  Enviar email */
+            try {
+                // Enviar al responsable
+                await transport.sendMail({
+                    from: process.env.EMAIL_USERNAME,
+                    to: correoResponsable,
+                    bcc: 'tics@gmanzanares.com',
+                    subject: 'Documento para autorización',
+                    html: `
+                        <p>Hola ${nombreResponsable},</p>
+                        <p>El siguiente documento fue AUTORIZADO:</p>
+                        <ul>
+                            <li><strong>Tipo:</strong> ${tipo}</li>
+                            <li><strong>Número:</strong> ${numero}</li>
+                            <li><strong>Valor:</strong> ${valor}</li>
+                            <li><strong>CUFE:</strong> ${cufe}</li>
+                        </ul>
+                        <p>Puedes ver el Pdf de la factura para corroborar datos en el siguiente enlace: <a href="${urlBase}${urlpdf}">Ver documento</a></p>
+                        <p>Ingresa al siguiente link para autorizar: <a href="${urlAutorizacion}">Plataforma Gestión</a></p>
+                 
+                        <p>Cordialmente,<br>Grupo Manzanares.</p>
+                    `
+                });
+        
+                console.log('📧 Correo enviado a responsable:..', correoResponsable);
+            } catch (error) {
+                console.error('❌ Error enviando correo:', error);
+            }
+        }
+
+        
+
 const emailComprasPorAutorizar = async (data) => {
         const link = 'https://gmanzanares.com.co/gestion/auth'
         console.log ("data recibida para correo", data);
@@ -235,5 +301,7 @@ export {
     emailRecoverPassword,
     emailNotAutorizacion,
     emailComprasPorAutorizar,
-    emailRecordatorioComprasPorAutorizar
+    emailRecordatorioComprasPorAutorizar,
+    emailCompraAutorizada
+    
 }
