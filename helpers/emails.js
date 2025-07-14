@@ -176,7 +176,7 @@ const emailCompraAutorizada = async (data) => {
                     from: process.env.EMAIL_USERNAME,
                     to: correoResponsable,
                     bcc: 'tics@gmanzanares.com',
-                    subject: 'Documento para autorización',
+                    subject: 'Documento AUTORIZADO',
                     html: `
                         <p>Hola ${nombreResponsable},</p>
                         <p>El siguiente documento fue AUTORIZADO:</p>
