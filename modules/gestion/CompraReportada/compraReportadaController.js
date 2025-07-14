@@ -559,7 +559,7 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                                 nombreSolicitante: usuarioModifico.name,
                                 correoResponsable: usuarioResponsable.email,
                                 nombreResponsable: usuarioResponsable.name,
-                                asignacionAutomatica: item.asignacionAutomatica || false
+                                asignacionAutomatica: true
                             });
                         }
                     }
