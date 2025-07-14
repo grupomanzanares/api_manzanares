@@ -179,7 +179,7 @@ const emailCompraAutorizada = async (data) => {
                     subject: 'Documento AUTORIZADO',
                     html: `
                         <p>Hola ${nombreResponsable},</p>
-                        <p>El siguiente documento fue AUTORIZADO:</p>
+                        <p>El siguiente documento fue AUTORIZADO por   strong>${nombreSolicitante}</strong> </p>
                         <ul>
                             <li><strong>Tipo:</strong> ${tipo}</li>
                             <li><strong>Número:</strong> ${numero}</li>
