@@ -139,7 +139,7 @@ const emailNotAutorizacion = async (data) => {
 const emailCompraAutorizada = async (data) => {
 
         const urlBase = 'https://gmanzanares.com.co/api_manzanares/'
-        const urlAutorizacion = 'https://gmanzanares.com.co/gestion/main/autorizar'
+ 
     
         console.log ("data recibida para correo", data);
     
@@ -186,8 +186,8 @@ const emailCompraAutorizada = async (data) => {
                             <li><strong>Valor:</strong> ${valor}</li>
                             <li><strong>CUFE:</strong> ${cufe}</li>
                         </ul>
-                        <p>Puedes ver el Pdf de la factura para corroborar datos en el siguiente enlace: <a href="${urlBase}${urlpdf}">Ver documento</a></p>
-                        <p>Ingresa al siguiente link para autorizar: <a href="${urlAutorizacion}">Plataforma Gestión</a></p>
+                        <p>Puedes ver el Pdf de la factura  en el siguiente enlace: <a href="${urlBase}${urlpdf}">Ver documento</a></p>
+       
                  
                         <p>Cordialmente,<br>Grupo Manzanares.</p>
                     `
