@@ -13,16 +13,16 @@ router.get('/', apiAuth, getComprasReportadas)
 router.get('/por-autorizar', apiAuth, getComprasPorAutorizar)
 router.get('/:id', apiAuth, validateGetCompraReportada,  getCompraReportada)
 router.post('/create', apiAuth, validateCreateCompraReportada, createCompraReportada)
-//router.put(
-  //'/:id',
-  //apiAuth,
-  //uploadAdjAutorizador.fields([
-   // { name: 'archivo', maxCount: 1 },
-   // { name: 'adjuntos', maxCount: 10 }
-  //]),
-  //validateGetCompraReportada,
-  //updateCompraReportada
-//)
+router.put(
+    '/:id',
+    apiAuth,
+    upload.fields([
+      { name: 'archivo', maxCount: 1 },      // PDF principal
+      { name: 'adjuntos', maxCount: 10 }     // Adjuntos de autorización
+    ]),
+    validateGetCompraReportada,
+    updateCompraReportada
+  );
 router.delete('/delete/:id',  apiAuth, deleteCompraReportada)
 router.post('/bulk-upsert', apiAuth, bulkUpsertComprasReportadas);
 router.post("/conciliar", apiAuth, conciliarCompras);

@@ -288,8 +288,9 @@ const updateCompraReportada = async (req, res) => {
         const body = req.body
 
         // Si se subió un archivo PDF, agrégalo al body
-        if (req.file ) {
-            body.urlPdf = `/uploads/${req.file.filename}`;
+        if (req.files && req.files['archivo'] && req.files['archivo'][0]) {
+            //body.urlPdf = `/uploads/${req.file.filename}`;
+            body.urlPdf = `/uploads/${req.files['archivo'][0].filename}`;
         }
 
         // Ejecuta la actualización
