@@ -118,7 +118,7 @@ async function enviarCorreosProgramados(motivo) {
 }
 
 // Ejecutar a las 11:15 am solo si es penúltimo o primer día hábil
-cron.schedule('18 11 * * *', () => {
+cron.schedule('20 11 * * *', () => {
   const hoy = new Date();
   console.log(`📅 Verificando fecha: ${hoy.toLocaleDateString()}`);
   
