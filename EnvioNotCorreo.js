@@ -116,10 +116,19 @@ async function enviarCorreosProgramados(motivo) {
     for (const responsable of resultado) {
       if (responsable.email) {
         try {
+          // Determinar el mensaje especial según el motivo
+          let mensajeEspecial = '';
+          if (motivo.includes('Penúltimo día hábil')) {
+            mensajeEspecial = 'Hoy es penúltimo día hábil del mes, es necesario que todos los documentos queden autorizados.';
+          } else if (motivo.includes('Primer día hábil')) {
+            mensajeEspecial = 'Hoy es primer día hábil del nuevo mes, necesitamos que todos los documentos del mes anterior queden autorizados y procesados.';
+          }
+
           await emailRecordatorioComprasPorAutorizar({
             correoResponsable: responsable.email,
             nombreResponsable: responsable.name,
-            CantidadFacturasPendientes: responsable.cantidad
+            CantidadFacturasPendientes: responsable.cantidad,
+            mensajeEspecial: mensajeEspecial
           });
           console.log(`✅ Correo enviado a ${responsable.email} - ${responsable.cantidad} pendientes (${motivo})`);
           correosEnviados++;

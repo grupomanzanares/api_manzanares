@@ -279,7 +279,8 @@ const emailRecordatorioComprasPorAutorizar = async (data) => {
         const {
             correoResponsable,
             nombreResponsable,
-            CantidadFacturasPendientes
+            CantidadFacturasPendientes,
+            mensajeEspecial = '' // Nuevo parámetro opcional
         } = data;
     
         /**  Enviar email */
@@ -292,6 +293,7 @@ const emailRecordatorioComprasPorAutorizar = async (data) => {
                 subject: 'NOTIFICACIóN: Documentos Pendientes para autorización..',
                 html: `
                       <p>Cordial Saludo, <b>${nombreResponsable}</b>,</p>
+                      ${mensajeEspecial ? `<p><strong>${mensajeEspecial}</strong></p>` : ''}
                       <p>Tienes <b>${CantidadFacturasPendientes}</b> documentos pendientes por autorizar.</p>
                       <p><a href="${link}"><b>Haz clic aquí para gestionarlas</b></a></p>
                       <br>
