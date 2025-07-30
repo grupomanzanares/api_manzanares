@@ -716,13 +716,111 @@ const getComprasPorAutorizar = async (req, res) => {
     }
 };
 
+const ejecutarEnvioCorreosProgramados = async (req, res) => {
+    try {
+        console.log('🚀 Ejecutando envío manual de correos programados...');
+        
+        // Importar las funciones necesarias
+        const { Op } = await import('sequelize');
+        
+        // Consulta para obtener compras pendientes por autorizar
+        const registros = await compraReportada.findAll({
+            where: {
+                habilitado: true,
+                estadoId: 2,
+                responsableId: { [Op.ne]: null }
+            },
+            include: [
+                {
+                    model: User,
+                    as: 'responsable',
+                    attributes: ['id', 'name', 'celphone', 'email']
+                }
+            ]
+        });
+
+        console.log(`📊 Total de registros encontrados: ${registros.length}`);
+
+        // Agrupar por responsableId
+        const resumen = {};
+        registros.forEach(registro => {
+            const responsable = registro.responsable;
+            if (!responsable) return;
+            const key = responsable.id;
+            if (!resumen[key]) {
+                resumen[key] = {
+                    name: responsable.name,
+                    celphone: responsable.celphone,
+                    email: responsable.email,
+                    cantidad: 0
+                };
+            }
+            resumen[key].cantidad += 1;
+        });
+
+        const resultado = Object.values(resumen);
+        console.log(`👥 Total de responsables con pendientes: ${resultado.length}`);
+
+        let correosEnviados = 0;
+        const errores = [];
+
+        for (const responsable of resultado) {
+            if (responsable.email) {
+                try {
+                    const { emailRecordatorioComprasPorAutorizar } = await import('../../../helpers/emails.js');
+                    await emailRecordatorioComprasPorAutorizar({
+                        correoResponsable: responsable.email,
+                        nombreResponsable: responsable.name,
+                        CantidadFacturasPendientes: responsable.cantidad
+                    });
+                    console.log(`✅ Correo enviado a ${responsable.email} - ${responsable.cantidad} pendientes`);
+                    correosEnviados++;
+                } catch (error) {
+                    console.error(`❌ Error enviando correo a ${responsable.email}:`, error.message);
+                    errores.push({
+                        email: responsable.email,
+                        error: error.message
+                    });
+                }
+            } else {
+                console.log(`⚠️ Responsable ${responsable.name} no tiene email configurado`);
+            }
+        }
+
+        console.log(`📧 Resumen: ${correosEnviados} correos enviados de ${resultado.length} responsables`);
+
+        res.status(200).json({
+            message: 'Envío de correos programados ejecutado',
+            resumen: {
+                totalResponsables: resultado.length,
+                correosEnviados,
+                errores: errores.length
+            },
+            detalles: {
+                responsables: resultado.map(r => ({
+                    name: r.name,
+                    email: r.email,
+                    cantidad: r.cantidad
+                })),
+                errores
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error en ejecutarEnvioCorreosProgramados:', error);
+        handleHttpError(res, 'Error ejecutando envío de correos programados');
+    }
+};
+
 export {
     getComprasReportadas,
+    getCompraReportadaJson,
     getCompraReportada,
     createCompraReportada,
-    deleteCompraReportada,
     updateCompraReportada,
+    deleteCompraReportada,
     bulkUpsertComprasReportadas,
     conciliarCompras,
-    getComprasPorAutorizar
+    getComprasPorAutorizar,
+    ejecutarEnvioCorreosProgramados
 }

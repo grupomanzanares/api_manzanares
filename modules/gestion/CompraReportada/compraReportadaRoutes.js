@@ -1,7 +1,7 @@
 import express from 'express';
 import { apiAuth } from '../../../auth/middleware/apiauth.js';
 import { validateCreateCompraReportada, validateGetCompraReportada } from './compraReportadaValidator.js';
-import { createCompraReportada, deleteCompraReportada, getComprasReportadas, getCompraReportada, updateCompraReportada, bulkUpsertComprasReportadas, conciliarCompras, getComprasPorAutorizar } from './compraReportadaController.js';
+import { createCompraReportada, deleteCompraReportada, getComprasReportadas, getCompraReportada, updateCompraReportada, bulkUpsertComprasReportadas, conciliarCompras, getComprasPorAutorizar, ejecutarEnvioCorreosProgramados } from './compraReportadaController.js';
 import upload from '../../../middleware/uploadPdf.js';
 import uploadAdjAutorizador from '../../../middleware/uploadAdjAutorizador.js';
 
@@ -26,6 +26,7 @@ router.put(
 router.delete('/delete/:id',  apiAuth, deleteCompraReportada)
 router.post('/bulk-upsert', apiAuth, bulkUpsertComprasReportadas);
 router.post("/conciliar", apiAuth, conciliarCompras);
+router.post("/enviar-correos-programados", apiAuth, ejecutarEnvioCorreosProgramados);
 
 router.put('/:id', apiAuth,upload.single('archivo') ,validateGetCompraReportada,  updateCompraReportada)
 
