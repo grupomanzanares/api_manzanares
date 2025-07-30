@@ -369,7 +369,8 @@ const updateCompraReportada = async (req, res) => {
                 correoSolicitante: usuarioModifico?.email,
                 nombreSolicitante: usuarioModifico?.name,
                 correoResponsable: usuarioResponsable?.email,
-                nombreResponsable: usuarioResponsable?.name
+                nombreResponsable: usuarioResponsable?.name,
+                asignacionAutomatica: false
             });
         }
 
