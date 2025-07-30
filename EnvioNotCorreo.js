@@ -70,6 +70,44 @@ function esPrimerDiaHabilDelMes(fecha = new Date()) {
   return false;
 }
 
+function esUltimoDiaHabilDelMes(fecha = new Date()) {
+  let year = fecha.getFullYear();
+  let month = fecha.getMonth();
+  let ultimo = new Date(year, month + 1, 0);
+  let diasHabiles = [];
+  
+  console.log(`🔍 Verificando último día hábil para: ${fecha.toDateString()}`);
+  console.log(`📅 Mes: ${month + 1}/${year}, Último día: ${ultimo.toDateString()}`);
+  
+  // Recorrer desde el último día hacia atrás
+  for (let d = new Date(ultimo); d.getMonth() === month; d.setDate(d.getDate() - 1)) {
+    if (esDiaHabil(d)) {
+      diasHabiles.push(new Date(d));
+      console.log(`📅 Día hábil encontrado: ${d.toDateString()}`);
+    }
+  }
+  
+  // Ordenar los días hábiles (del último al primero)
+  diasHabiles.sort((a, b) => b - a);
+  
+  console.log(`📊 Total días hábiles del mes: ${diasHabiles.length}`);
+  diasHabiles.forEach((dia, index) => {
+    console.log(`  ${index + 1}. ${dia.toDateString()}`);
+  });
+  
+  // El último día hábil es el primero en la lista (índice 0)
+  if (diasHabiles.length >= 1) {
+    const ultimoDiaHabil = diasHabiles[0];
+    const esUltimo = fecha.toDateString() === ultimoDiaHabil.toDateString();
+    console.log(`🎯 Último día hábil: ${ultimoDiaHabil.toDateString()}`);
+    console.log(`🎯 ¿Es último? ${esUltimo ? 'SÍ' : 'NO'}`);
+    return esUltimo;
+  }
+  
+  console.log(`❌ No hay días hábiles en el mes`);
+  return false;
+}
+
 async function enviarCorreosProgramados(motivo) {
   console.log(`🚀 Iniciando envío de correos: ${motivo}`);
   
@@ -119,9 +157,11 @@ async function enviarCorreosProgramados(motivo) {
           // Determinar el mensaje especial según el motivo
           let mensajeEspecial = '';
           if (motivo.includes('Penúltimo día hábil')) {
-            mensajeEspecial = 'Hoy es penúltimo día hábil del mes, es necesario que todos los documentos queden autorizados.';
+            mensajeEspecial = 'Hoy es penúltimo día hábil del mes, es necesario que todos los documentos queden autorizados antes del cierre del mes.';
           } else if (motivo.includes('Primer día hábil')) {
             mensajeEspecial = 'Hoy es primer día hábil del nuevo mes, necesitamos que todos los documentos del mes anterior queden autorizados y procesados.';
+          } else if (motivo.includes('Último día hábil')) {
+            mensajeEspecial = 'Hoy es último día hábil del mes, es urgente que todos los documentos queden autorizados antes del cierre del mes.';
           }
 
           await emailRecordatorioComprasPorAutorizar({
@@ -147,8 +187,8 @@ async function enviarCorreosProgramados(motivo) {
   }
 }
 
-// Ejecutar a las 11:20 am solo si es penúltimo o primer día hábil
-cron.schedule('20 11 * * *', () => {
+// Ejecutar a las 8:00 am solo si es penúltimo, primer o último día hábil
+cron.schedule('0 8 * * *', () => {
   const hoy = new Date();
   console.log(`\n⏰ ===== CRON JOB EJECUTADO =====`);
   console.log(`📅 Fecha actual: ${hoy.toLocaleDateString()}`);
@@ -161,12 +201,18 @@ cron.schedule('20 11 * * *', () => {
   console.log(`\n🔍 Verificando si es primer día hábil...`);
   const esPrimero = esPrimerDiaHabilDelMes(hoy);
   
+  console.log(`\n🔍 Verificando si es último día hábil...`);
+  const esUltimo = esUltimoDiaHabilDelMes(hoy);
+  
   if (esPenultimo) {
     console.log('✅ ES PENÚLTIMO DÍA HÁBIL - Enviando correos...');
     enviarCorreosProgramados('Penúltimo día hábil');
   } else if (esPrimero) {
     console.log('✅ ES PRIMER DÍA HÁBIL - Enviando correos...');
     enviarCorreosProgramados('Primer día hábil');
+  } else if (esUltimo) {
+    console.log('✅ ES ÚLTIMO DÍA HÁBIL - Enviando correos...');
+    enviarCorreosProgramados('Último día hábil');
   } else {
     console.log('❌ No es día especial para envío de correos');
   }
