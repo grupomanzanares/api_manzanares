@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import db from './config/db.js';
-import compraReportada from './modules/gestion/CompraReportada/compraReportada.js';
-import User from './auth/models/User.js';
+import { compraReportada, User } from './modules/gestion/gestionRelations.js';
 import { Op } from 'sequelize';
 import { emailRecordatorioComprasPorAutorizar } from './helpers/emails.js';
 
