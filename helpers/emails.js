@@ -73,6 +73,7 @@ const emailNotAutorizacion = async (data) => {
     const urlAutorizacion = 'https://gmanzanares.com.co/gestion/main/autorizar'
 
     console.log ("data recibida para correo", data);
+    console.log ("🔍 asignacionAutomatica:", data.asignacionAutomatica);
 
         const transport = nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
@@ -103,6 +104,17 @@ const emailNotAutorizacion = async (data) => {
     
         /**  Enviar email */
         try {
+            // Generar el mensaje condicional
+            const mensajeCondicional = asignacionAutomatica 
+                ? `<p>El sistema ha encontrado que normalmente autorizas facturas de este proveedor, te agradecemos verifiques y realices el proceso correspondiente o rechaces para que la persona autorizada reasigne la factura</p>`
+                : `<p>Este documento fue gestionado por ${nombreSolicitante} (${correoSolicitante}).</p>`;
+            
+            console.log('🔍 Debug mensaje condicional:', {
+                asignacionAutomatica,
+                tipoAsignacionAutomatica: typeof asignacionAutomatica,
+                mensajeGenerado: asignacionAutomatica ? 'AUTOMATICA' : 'MANUAL'
+            });
+
             // Enviar al responsable
             await transport.sendMail({
                 from: process.env.EMAIL_USERNAME,
@@ -120,10 +132,7 @@ const emailNotAutorizacion = async (data) => {
                     </ul>
                     <p>Puedes ver el Pdf de la factura para corroborar datos en el siguiente enlace: <a href="${urlBase}${urlpdf}">Ver documento</a></p>
                     <p>Ingresa al siguiente link para autorizar: <a href="${urlAutorizacion}">Plataforma Gestión</a></p>
-                    ${asignacionAutomatica 
-                        ? `<p>El sistema ha encontrado que normalmente autorizas facturas de este proveedor, te agradecemos verifiques y realices el proceso correspondiente o rechaces para que la persona autorizada reasigne la factura</p>`
-                        : `<p>Este documento fue gestionado por ${nombreSolicitante} (${correoSolicitante}).</p>`
-                    }
+                    ${mensajeCondicional}
                     <p>Cordialmente,<br>Grupo Manzanares.</p>
                 `
             });

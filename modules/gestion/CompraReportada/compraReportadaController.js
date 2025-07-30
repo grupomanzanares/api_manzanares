@@ -531,7 +531,7 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                 if (autorizacion && autorizacion.responsable) {
                     item.responsableId = autorizacion.responsable.id;
                     item.estadoId = 2; // Estado por autorizar
-                    item.asignacionAutomatica = true; // Bandera para indicar asignación automática
+                     // Bandera para indicar asignación automática
                 }
 
                 console.log(`Item ${i + 1}: Creando nuevo registro...`);
@@ -548,6 +548,7 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                         ]);
 
                         if (usuarioModifico && usuarioResponsable) {
+                            console.log('🔍 Enviando correo con asignacionAutomatica:', true);
                             emailNotAutorizacion({
                                 tipo: item.tipo,
                                 numero: item.numero,
