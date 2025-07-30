@@ -1,27 +1,17 @@
 import 'dotenv/config';
-import cron from 'node-cron';
 import db from './config/db.js';
 import compraReportada from './modules/gestion/CompraReportada/compraReportada.js';
 import User from './auth/models/User.js';
 import { Op } from 'sequelize';
 import { emailRecordatorioComprasPorAutorizar } from './helpers/emails.js';
 
-(async () => {
-  try {
-    await db.authenticate();
-    await db.sync();
-    console.log('✅ Conectado a la base de datos correctamente.');
-  } catch (error) {
-    console.error('❌ Error conectando a la base de datos:', error);
-    process.exit(1);
-  }
-})();
-
+// Función para verificar si es día hábil
 function esDiaHabil(fecha = new Date()) {
   const dia = fecha.getDay();
   return dia !== 0 && dia !== 6;
 }
 
+// Función para verificar si es penúltimo día hábil del mes
 function esPenultimoDiaHabilDelMes(fecha = new Date()) {
   let year = fecha.getFullYear();
   let month = fecha.getMonth();
@@ -60,6 +50,7 @@ function esPenultimoDiaHabilDelMes(fecha = new Date()) {
   return false;
 }
 
+// Función para verificar si es primer día hábil del mes
 function esPrimerDiaHabilDelMes(fecha = new Date()) {
   let year = fecha.getFullYear();
   let month = fecha.getMonth();
@@ -75,7 +66,7 @@ async function enviarCorreosProgramados(motivo) {
   console.log(`🚀 Iniciando envío de correos: ${motivo}`);
   
   try {
-    // Consulta similar a getComprasPorAutorizar
+    // Consulta para obtener compras pendientes por autorizar
     const registros = await compraReportada.findAll({
       where: {
         habilitado: true,
@@ -113,16 +104,27 @@ async function enviarCorreosProgramados(motivo) {
     const resultado = Object.values(resumen);
     console.log(`👥 Total de responsables con pendientes: ${resultado.length}`);
 
+    if (resultado.length === 0) {
+      console.log('ℹ️ No hay responsables con documentos pendientes por autorizar');
+      return;
+    }
+
+    // Mostrar información de los responsables
+    resultado.forEach((responsable, index) => {
+      console.log(`${index + 1}. ${responsable.name} (${responsable.email}) - ${responsable.cantidad} pendientes`);
+    });
+
     let correosEnviados = 0;
     for (const responsable of resultado) {
       if (responsable.email) {
         try {
+          console.log(`📧 Enviando correo a ${responsable.email}...`);
           await emailRecordatorioComprasPorAutorizar({
             correoResponsable: responsable.email,
             nombreResponsable: responsable.name,
             CantidadFacturasPendientes: responsable.cantidad
           });
-          console.log(`✅ Correo enviado a ${responsable.email} - ${responsable.cantidad} pendientes (${motivo})`);
+          console.log(`✅ Correo enviado exitosamente a ${responsable.email} - ${responsable.cantidad} pendientes`);
           correosEnviados++;
         } catch (error) {
           console.error(`❌ Error enviando correo a ${responsable.email}:`, error.message);
@@ -132,36 +134,50 @@ async function enviarCorreosProgramados(motivo) {
       }
     }
 
-    console.log(`📧 Resumen: ${correosEnviados} correos enviados de ${resultado.length} responsables (${motivo})`);
+    console.log(`\n📧 Resumen: ${correosEnviados} correos enviados de ${resultado.length} responsables`);
     
   } catch (error) {
     console.error('❌ Error en enviarCorreosProgramados:', error);
   }
 }
 
-// Ejecutar a las 11:20 am solo si es penúltimo o primer día hábil
-cron.schedule('20 11 * * *', () => {
-  const hoy = new Date();
-  console.log(`\n⏰ ===== CRON JOB EJECUTADO =====`);
-  console.log(`📅 Fecha actual: ${hoy.toLocaleDateString()}`);
-  console.log(`📅 Hora actual: ${hoy.toLocaleTimeString()}`);
-  console.log(`📅 Día de la semana: ${hoy.getDay()} (${hoy.getDay() === 0 ? 'Domingo' : hoy.getDay() === 6 ? 'Sábado' : 'Hábil'})`);
-  
-  console.log(`\n🔍 Verificando si es penúltimo día hábil...`);
-  const esPenultimo = esPenultimoDiaHabilDelMes(hoy);
-  
-  console.log(`\n🔍 Verificando si es primer día hábil...`);
-  const esPrimero = esPrimerDiaHabilDelMes(hoy);
-  
-  if (esPenultimo) {
-    console.log('✅ ES PENÚLTIMO DÍA HÁBIL - Enviando correos...');
-    enviarCorreosProgramados('Penúltimo día hábil');
-  } else if (esPrimero) {
-    console.log('✅ ES PRIMER DÍA HÁBIL - Enviando correos...');
-    enviarCorreosProgramados('Primer día hábil');
-  } else {
-    console.log('❌ No es día especial para envío de correos');
+// Función principal de prueba
+async function testCronLogic() {
+  try {
+    // Conectar a la base de datos
+    await db.authenticate();
+    console.log('✅ Conectado a la base de datos correctamente.');
+
+    const hoy = new Date();
+    console.log(`\n⏰ ===== PRUEBA DE LÓGICA CRON =====`);
+    console.log(`📅 Fecha actual: ${hoy.toLocaleDateString()}`);
+    console.log(`📅 Hora actual: ${hoy.toLocaleTimeString()}`);
+    console.log(`📅 Día de la semana: ${hoy.getDay()} (${hoy.getDay() === 0 ? 'Domingo' : hoy.getDay() === 6 ? 'Sábado' : 'Hábil'})`);
+    
+    console.log(`\n🔍 Verificando si es penúltimo día hábil...`);
+    const esPenultimo = esPenultimoDiaHabilDelMes(hoy);
+    
+    console.log(`\n🔍 Verificando si es primer día hábil...`);
+    const esPrimero = esPrimerDiaHabilDelMes(hoy);
+    
+    if (esPenultimo) {
+      console.log('✅ ES PENÚLTIMO DÍA HÁBIL - Ejecutando envío de correos...');
+      await enviarCorreosProgramados('Penúltimo día hábil');
+    } else if (esPrimero) {
+      console.log('✅ ES PRIMER DÍA HÁBIL - Ejecutando envío de correos...');
+      await enviarCorreosProgramados('Primer día hábil');
+    } else {
+      console.log('❌ No es día especial para envío de correos');
+    }
+    
+    console.log(`⏰ ===== FIN PRUEBA =====\n`);
+    
+  } catch (error) {
+    console.error('❌ Error en testCronLogic:', error);
+  } finally {
+    process.exit(0);
   }
-  
-  console.log(`⏰ ===== FIN CRON JOB =====\n`);
-}); 
+}
+
+// Ejecutar la prueba
+testCronLogic(); 
