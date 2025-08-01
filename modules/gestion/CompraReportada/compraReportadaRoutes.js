@@ -16,7 +16,7 @@ router.post('/create', apiAuth, validateCreateCompraReportada, createCompraRepor
 
 // Ruta para autorizador (solo adjuntos, sin PDF principal)
 router.put(
-    '/:id/autorizar',
+    '/autorizar/:id',
     apiAuth,
     uploadAdjAutorizador.array('adjuntos', 10),  // Solo adjuntos, hasta 10 archivos
     validateGetCompraReportada,
