@@ -365,13 +365,13 @@ const updateCompraReportada = async (req, res) => {
                 valor: updateRegistro.valor,
                 cufe: updateRegistro.cufe,
                 urlpdf: updateRegistro.urlPdf,
-                responsableId: updateRegistro.responsableId,
-                userMod: updateRegistro.userMod,
                 correoSolicitante: usuarioModifico?.email,
                 nombreSolicitante: usuarioModifico?.name,
                 correoResponsable: usuarioResponsable?.email,
                 nombreResponsable: usuarioResponsable?.name,
-                asignacionAutomatica: false
+                asignacionAutomatica: false,
+                responsableId: updateRegistro.responsableId,
+                userMod: updateRegistro.userMod,
             });
         }
 
@@ -566,13 +566,13 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                                 valor: item.valor,
                                 cufe: item.cufe,
                                 urlpdf: item.urlPdf,
-                                responsableId: item.responsableId,
-                                userMod: item.userMod,
                                 correoSolicitante: usuarioModifico.email,
                                 nombreSolicitante: usuarioModifico.name,
                                 correoResponsable: usuarioResponsable.email,
                                 nombreResponsable: usuarioResponsable.name,
-                                asignacionAutomatica: true
+                                asignacionAutomatica: true,
+                                responsableId: item.responsableId,
+                                userMod: item.userMod
                             });
                         }
                     }
