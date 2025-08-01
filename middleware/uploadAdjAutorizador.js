@@ -1,6 +1,8 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import db from '../config/db.js';
+import compraReportada from '../modules/gestion/CompraReportada/compraReportada.js';
 
 // Extensiones permitidas
 const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.xlsx', '.xls'];
@@ -14,24 +16,45 @@ const storage = multer.diskStorage({
         }
         cb(null, dest);
     },
-    filename: function (req, file, cb) {
-        // Obtener emisor y numero
-        const emisor = req.body?.emisor || req.query?.emisor || 'SIN_EMISOR';
-        const numero = req.body?.numero || req.query?.numero || 'SIN_NUMERO';
-        if (!emisor || !numero) {
-            return cb(new Error('Faltan datos del emisor o número'), null);
+    filename: async function (req, file, cb) {
+        try {
+            // Obtener el ID de la URL
+            const id = req.params.id;
+            
+            if (!id) {
+                return cb(new Error('ID no encontrado en la URL'), null);
+            }
+
+            // Consultar la base de datos para obtener emisor y numero
+            const compra = await compraReportada.findByPk(id);
+            
+            if (!compra) {
+                return cb(new Error(`No se encontró la compra con ID: ${id}`), null);
+            }
+
+            const emisor = compra.emisor;
+            const numero = compra.numero;
+
+            console.log(`📄 Consultando compra ID: ${id} - Emisor: ${emisor}, Número: ${numero}`);
+
+            // Buscar archivos existentes para este emisor y numero
+            const dest = './public/uploads/adjautorizador/';
+            const baseName = `${emisor}-${numero}`;
+            let consecutivo = 1;
+            if (fs.existsSync(dest)) {
+                const files = fs.readdirSync(dest).filter(f => f.startsWith(baseName));
+                consecutivo = files.length + 1;
+            }
+            const ext = path.extname(file.originalname).toLowerCase();
+            const fileName = `${baseName}-${consecutivo}${ext}`;
+            
+            console.log(`💾 Guardando archivo: ${fileName}`);
+            cb(null, fileName);
+            
+        } catch (error) {
+            console.error('❌ Error consultando base de datos:', error);
+            cb(new Error(`Error consultando base de datos: ${error.message}`), null);
         }
-        // Buscar archivos existentes para este emisor y numero
-        const dest = './public/uploads/adjautorizador/';
-        const baseName = `${emisor}-${numero}`;
-        let consecutivo = 1;
-        if (fs.existsSync(dest)) {
-            const files = fs.readdirSync(dest).filter(f => f.startsWith(baseName));
-            consecutivo = files.length + 1;
-        }
-        const ext = path.extname(file.originalname).toLowerCase();
-        const fileName = `${baseName}-${consecutivo}${ext}`;
-        cb(null, fileName);
     }
 });
 
