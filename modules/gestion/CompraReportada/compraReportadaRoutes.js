@@ -13,21 +13,28 @@ router.get('/', apiAuth, getComprasReportadas)
 router.get('/por-autorizar', apiAuth, getComprasPorAutorizar)
 router.get('/:id', apiAuth, validateGetCompraReportada,  getCompraReportada)
 router.post('/create', apiAuth, validateCreateCompraReportada, createCompraReportada)
+
+// Ruta para autorizador (solo adjuntos, sin PDF principal)
+router.put(
+    '/:id/autorizar',
+    apiAuth,
+    uploadAdjAutorizador.array('adjuntos', 10),  // Solo adjuntos, hasta 10 archivos
+    validateGetCompraReportada,
+    updateCompraReportada
+);
+
+// Ruta para actualización simple con solo PDF principal
 router.put(
     '/:id',
     apiAuth,
-    upload.fields([
-      { name: 'archivo', maxCount: 1 },      // PDF principal
-      { name: 'adjuntos', maxCount: 10 }     // Adjuntos de autorización
-    ]),
+    upload.single('archivo'),
     validateGetCompraReportada,
     updateCompraReportada
-  );
+);
+
 router.delete('/delete/:id',  apiAuth, deleteCompraReportada)
 router.post('/bulk-upsert', apiAuth, bulkUpsertComprasReportadas);
 router.post("/conciliar", apiAuth, conciliarCompras);
 router.post("/enviar-correos-programados", apiAuth, ejecutarEnvioCorreosProgramados);
-
-router.put('/:id', apiAuth,upload.single('archivo') ,validateGetCompraReportada,  updateCompraReportada)
 
 export default router

@@ -288,9 +288,10 @@ const updateCompraReportada = async (req, res) => {
         const body = req.body
 
         // Si se subió un archivo PDF, agrégalo al body
-        if (req.files && req.files['archivo'] && req.files['archivo'][0]) {
-            //body.urlPdf = `/uploads/${req.file.filename}`;
-            body.urlPdf = `/uploads/${req.files['archivo'][0].filename}`;
+        if (req.file) {
+            // Caso: upload.single() - archivo único
+            body.urlPdf = `/uploads/${req.file.filename}`;
+            console.log('📄 PDF principal subido:', body.urlPdf);
         }
 
         // Ejecuta la actualización
@@ -528,11 +529,20 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                     }]
                 });
 
-                // Si se encuentra un responsable, asignarlo al item
+                // Si se encuentra un responsable, asignarlo al item (excluyendo jefes)
                 if (autorizacion && autorizacion.responsable) {
-                    item.responsableId = autorizacion.responsable.id;
-                    item.estadoId = 2; // Estado por autorizar
-                     // Bandera para indicar asignación automática
+                    const responsableId = autorizacion.responsable.id;
+                    
+                    // Excluir jefes (IDs 22 y 23) de asignación automática
+                    if (responsableId !== 22 && responsableId !== 23) {
+                        item.responsableId = responsableId;
+                        item.estadoId = 2; // Estado por autorizar
+                        item.asignacionAutomatica = true; // Bandera para indicar asignación automática
+                        console.log(`✅ Asignación automática a responsable ID: ${responsableId}`);
+                    } else {
+                        console.log(`⚠️ Omitiendo asignación automática para jefe ID: ${responsableId}`);
+                        // No asignar responsable, quedará pendiente de asignación manual
+                    }
                 }
 
                 console.log(`Item ${i + 1}: Creando nuevo registro...`);
