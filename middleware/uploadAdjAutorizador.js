@@ -39,7 +39,7 @@ const storage = multer.diskStorage({
 
             // Buscar archivos existentes para este emisor y numero
             const dest = './public/uploads/adjautorizador/';
-            const baseName = `${emisor}-${numero}`;
+            const baseName = `${emisor}${numero}`;
             let consecutivo = 1;
             if (fs.existsSync(dest)) {
                 const files = fs.readdirSync(dest).filter(f => f.startsWith(baseName));

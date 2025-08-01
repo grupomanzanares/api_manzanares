@@ -226,10 +226,48 @@ const getCompraReportada = async (req, res) => {
         // Puedes volver a consultar los detalles si quieres asegurarte de tener los datos actualizados
         // const detallesActualizados = await CompraReportadaDetalle.findAll({ where: { numeroFactura: data.numero } });
 
+        // Buscar archivos adjuntos en la carpeta uploads/adjautorizador
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        
+        let adjuntos = [];
+        try {
+            const adjuntosDir = './public/uploads/adjautorizador/';
+            const emisorNumero = `${data.emisor}${data.numero}`;
+            
+            // Verificar si existe el directorio
+            try {
+                await fs.access(adjuntosDir);
+            } catch (error) {
+                console.log('📁 Directorio de adjuntos no existe, creando...');
+                await fs.mkdir(adjuntosDir, { recursive: true });
+            }
+            
+            // Leer archivos del directorio
+            const archivos = await fs.readdir(adjuntosDir);
+            
+            // Filtrar archivos que coincidan con el patrón emisorNumero
+            adjuntos = archivos
+                .filter(archivo => archivo.startsWith(emisorNumero))
+                .map(archivo => ({
+                    nombre: archivo,
+                    url: `/uploads/adjautorizador/${archivo}`,
+                    extension: path.extname(archivo).toLowerCase()
+                }))
+                .sort((a, b) => a.nombre.localeCompare(b.nombre)); // Ordenar alfabéticamente
+                
+            console.log(`📎 Encontrados ${adjuntos.length} adjuntos para ${emisorNumero}`);
+            
+        } catch (error) {
+            console.error('❌ Error buscando adjuntos:', error);
+            adjuntos = [];
+        }
+
         // Armar la respuesta
         const resultado = {
             ...data.toJSON(),
-            items: detalles.map(det => det.toJSON())
+            items: detalles.map(det => det.toJSON()),
+            adjuntos: adjuntos
         };
 
         res.status(200).json(resultado);
