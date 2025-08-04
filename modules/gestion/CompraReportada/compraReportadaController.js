@@ -17,6 +17,7 @@ const __dirname = path.dirname(__filename);
 
 const entity = "compraReportada"
 
+
 const getComprasReportadas = async (req, res) => {
     try {
         const registros = await compraReportada.findAll({
@@ -42,15 +43,18 @@ const getComprasReportadas = async (req, res) => {
             ]
         });
 
-
         // 2. Cargar todas las empresas y centros de costo
         const [empresas, centrosCosto] = await Promise.all([
             empresa.findAll({ attributes: ['id', 'nit'] }),
             ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
         ]);
 
-        // 3. Armar un resultado enriquecido con nombre del centro de costo
-        const resultado = registros.map(registro => {
+        // Importar fs y path para manejo de archivos
+        const fs = await import('fs/promises');
+        const path = await import('path');
+
+        // 3. Armar un resultado enriquecido con nombre del centro de costo y adjuntos
+        const resultado = await Promise.all(registros.map(async (registro) => {
             const empresaNit = registro.empresa;
             const codigoCcosto = registro.ccosto;
 
@@ -63,11 +67,46 @@ const getComprasReportadas = async (req, res) => {
                 c.codigo === codigoCcosto && c.empresaId === empresaId
             );
 
+            // Buscar archivos adjuntos para este registro
+            let adjuntos = [];
+            try {
+                const adjuntosDir = './public/uploads/adjautorizador/';
+                const emisorNumero = `${registro.emisor}${registro.numero}`;
+                
+                // Verificar si existe el directorio
+                try {
+                    await fs.access(adjuntosDir);
+                    
+                    // Leer archivos del directorio
+                    const archivos = await fs.readdir(adjuntosDir);
+                    
+                    // Filtrar archivos que coincidan con el patrón emisorNumero
+                    adjuntos = archivos
+                        .filter(archivo => archivo.startsWith(emisorNumero))
+                        .map(archivo => ({
+                            nombre: archivo,
+                            url: `/uploads/adjautorizador/${archivo}`,
+                            extension: path.extname(archivo).toLowerCase()
+                        }))
+                        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+                        
+                } catch (error) {
+                    // Si el directorio no existe, adjuntos queda como array vacío
+                    console.log(`📁 Directorio de adjuntos no existe para ${emisorNumero}`);
+                }
+                
+            } catch (error) {
+                console.error(`❌ Error buscando adjuntos para ${registro.emisor}${registro.numero}:`, error);
+                adjuntos = [];
+            }
+
             return {
                 ...registro.toJSON(),
-                ccostoNombre: ccostoEncontrado?.nombre || null
+                ccostoNombre: ccostoEncontrado?.nombre || null,
+                adjuntos: adjuntos,
+                cantidadAdjuntos: adjuntos.length // Campo adicional útil para el frontend
             };
-        });
+        }));
 
         res.json(resultado);
     } catch (error) {
@@ -148,52 +187,11 @@ const getCompraReportadaJson = async (req, res) => {
         }
 
 
-
-        // Buscar archivos adjuntos en la carpeta uploads/adjautorizador
-        const fs = await import('fs/promises');
-        const path = await import('path');
-        
-        let adjuntos = [];
-        try {
-            const adjuntosDir = './public/uploads/adjautorizador/';
-            const emisorNumero = `${data.emisor}${data.numero}`;
-            
-            // Verificar si existe el directorio
-            try {
-                await fs.access(adjuntosDir);
-            } catch (error) {
-                console.log('📁 Directorio de adjuntos no existe, creando...');
-                await fs.mkdir(adjuntosDir, { recursive: true });
-            }
-            
-            // Leer archivos del directorio
-            const archivos = await fs.readdir(adjuntosDir);
-            
-            // Filtrar archivos que coincidan con el patrón emisorNumero
-            adjuntos = archivos
-                .filter(archivo => archivo.startsWith(emisorNumero))
-                .map(archivo => ({
-                    nombre: archivo,
-                    url: `/uploads/adjautorizador/${archivo}`,
-                    extension: path.extname(archivo).toLowerCase()
-                }))
-                .sort((a, b) => a.nombre.localeCompare(b.nombre)); // Ordenar alfabéticamente
-                
-            console.log(`📎 Encontrados ${adjuntos.length} adjuntos para ${emisorNumero}`);
-            
-        } catch (error) {
-            console.error('❌ Error buscando adjuntos:', error);
-            adjuntos = [];
-        }
-
-
-
         // Crear el resultado enriquecido
         const resultado = {
             ...data.toJSON(),
             ccostoNombre: ccostoEncontrado?.nombre || null,
             urlJson: jsonPath,
-            adjuntos: adjuntos,
             jsonContent: jsonContent // Incluir el contenido del JSON en la respuesta
         };
 
