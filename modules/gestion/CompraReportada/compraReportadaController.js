@@ -648,9 +648,7 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                                 nombreSolicitante: usuarioModifico.name,
                                 correoResponsable: usuarioResponsable.email,
                                 nombreResponsable: usuarioResponsable.name,
-                                asignacionAutomatica: true,
-                                responsableId: item.responsableId,
-                                userMod: item.userMod
+                                asignacionAutomatica: true
                             });
                         }
                     }
