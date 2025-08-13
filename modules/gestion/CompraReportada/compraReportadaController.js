@@ -595,33 +595,33 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                 item.urlPdf = `/uploads/${emisor}${numero}.pdf`;
 
                 // Para registros nuevos, buscar responsable en matriz_autorizaciones
-                const autorizacion = await matrizAutorizaciones.findOne({
-                    where: {
-                        empresa: empresa,
-                        emisor: emisor
-                    },
-                    include: [{
-                        model: User,
-                        as: 'responsable',
-                        attributes: ['id', 'email', 'name']
-                    }]
-                });
+                //const autorizacion = await matrizAutorizaciones.findOne({
+                //    where: {
+                //        empresa: empresa,
+                //        emisor: emisor
+                //    },
+                //    include: [{
+                //        model: User,
+                //        as: 'responsable',
+                //        attributes: ['id', 'email', 'name']
+                //    }]
+                //});
 
                 // Si se encuentra un responsable, asignarlo al item (excluyendo jefes)
-                if (autorizacion && autorizacion.responsable) {
-                    const responsableId = autorizacion.responsable.id;
+                //if (autorizacion && autorizacion.responsable) {
+                //    const responsableId = autorizacion.responsable.id;
                     
-                    // Excluir jefes (IDs 22 y 23) de asignación automática
-                    if (responsableId !== 22 && responsableId !== 23) {
-                        item.responsableId = responsableId;
-                        item.estadoId = 2; // Estado por autorizar
-                        item.asignacionAutomatica = true; // Bandera para indicar asignación automática
-                        console.log(`✅ Asignación automática a responsable ID: ${responsableId}`);
-                    } else {
-                        console.log(`⚠️ Omitiendo asignación automática para jefe ID: ${responsableId}`);
-                        // No asignar responsable, quedará pendiente de asignación manual
-                    }
-                }
+                //    // Excluir jefes (IDs 22 y 23) de asignación automática
+                //    if (responsableId !== 22 && responsableId !== 23) {
+                //        item.responsableId = responsableId;
+                //        item.estadoId = 2; // Estado por autorizar
+                //        item.asignacionAutomatica = true; // Bandera para indicar asignación automática
+                //        console.log(`✅ Asignación automática a responsable ID: ${responsableId}`);
+                //    } else {
+                //        console.log(`⚠️ Omitiendo asignación automática para jefe ID: ${responsableId}`);
+                //        // No asignar responsable, quedará pendiente de asignación manual
+                //    }
+                //}
 
                 console.log(`Item ${i + 1}: Creando nuevo registro...`);
                 try {
@@ -630,28 +630,29 @@ const bulkUpsertComprasReportadas = async (req, res) => {
                     resultados.creados.push({ emisor, numero, id: nuevoRegistro.id });
 
                     // Si se asignó un responsable, enviar correo
-                    if (item.responsableId && item.estadoId === 2) {
-                        const [usuarioModifico, usuarioResponsable] = await Promise.all([
-                            User.findOne({ where: { identificacion: item.userMod }, attributes: ['email', 'name'] }),
-                            User.findByPk(item.responsableId, { attributes: ['email', 'name'] })
-                        ]);
+                    //if (item.responsableId && item.estadoId === 2) {
+                    //    const [usuarioModifico, usuarioResponsable] = await Promise.all([
+                    //        User.findOne({ where: { identificacion: item.userMod }, attributes: ['email', 'name'] }),
+                    //        User.findByPk(item.responsableId, { attributes: ['email', 'name'] })
+                    //    ]);
 
-                        if (usuarioModifico && usuarioResponsable) {
-                            console.log('🔍 Enviando correo con asignacionAutomatica:', true);
-                            emailNotAutorizacion({
-                                tipo: item.tipo,
-                                numero: item.numero,
-                                valor: item.valor,
-                                cufe: item.cufe,
-                                urlpdf: item.urlPdf,
-                                correoSolicitante: usuarioModifico.email,
-                                nombreSolicitante: usuarioModifico.name,
-                                correoResponsable: usuarioResponsable.email,
-                                nombreResponsable: usuarioResponsable.name,
-                                asignacionAutomatica: true
-                            });
-                        }
-                    }
+                    //    if (usuarioModifico && usuarioResponsable) {
+                    //        console.log('🔍 Enviando correo con asignacionAutomatica:', true);
+                    //        emailNotAutorizacion({
+                    //            tipo: item.tipo,
+                    //            numero: item.numero,
+                    //            valor: item.valor,
+                    //            cufe: item.cufe,
+                    //            urlpdf: item.urlPdf,
+                    //            correoSolicitante: usuarioModifico.email,
+                    //            nombreSolicitante: usuarioModifico.name,
+                    //            correoResponsable: usuarioResponsable.email,
+                    //            nombreResponsable: usuarioResponsable.name,
+                    //            asignacionAutomatica: true
+                    //        });
+                    //    }
+                    //}
+                    // Quitando asignacion automatica
                 } catch (creationError) {
                     console.error(`Item ${i + 1}: Error al crear:`, creationError);
                     resultados.errores.push({
