@@ -936,7 +936,16 @@ const getMedicionesTiempo = async (req, res) => {
                 'empresa',
                 'valor',
                 'emisor',
-                'numero'
+                'numero',
+                'estadoId',
+                'responsableId'
+            ],
+            include: [
+                {
+                    model: User,
+                    as: 'responsable',
+                    attributes: ['id', 'name', 'email']
+                }
             ],
             order: [['fecha', 'DESC']]
         });
@@ -944,10 +953,29 @@ const getMedicionesTiempo = async (req, res) => {
         // Calcular métricas de tiempo
         const metricas = calcularMetricasTiempo(compras, tipo);
         
+        // Agregar información adicional de usuarios únicos
+        const usuariosUnicos = [...new Set(compras.map(c => c.user))];
+        const resumenUsuarios = usuariosUnicos.map(userId => {
+            const comprasUsuario = compras.filter(c => c.user === userId);
+            const totalValor = comprasUsuario.reduce((sum, c) => sum + (parseFloat(c.valor) || 0), 0);
+            
+            return {
+                usuario: userId,
+                totalCompras: comprasUsuario.length,
+                totalValor: totalValor.toFixed(2),
+                valorPromedio: (totalValor / comprasUsuario.length).toFixed(2),
+                comprasCompletadas: comprasUsuario.filter(c => c.fechaTesoreria).length,
+                comprasPendientes: comprasUsuario.filter(c => !c.fechaTesoreria).length,
+                porcentajeCompletado: ((comprasUsuario.filter(c => c.fechaTesoreria).length / comprasUsuario.length) * 100).toFixed(1)
+            };
+        });
+        
         res.status(200).json({
             success: true,
             data: metricas,
+            resumenUsuarios: resumenUsuarios.sort((a, b) => b.totalCompras - a.totalCompras),
             totalRegistros: compras.length,
+            totalUsuarios: usuariosUnicos.length,
             filtros: { tipo, usuario, fechaInicio, fechaFin, empresa }
         });
         
@@ -1020,16 +1048,43 @@ const calcularMetricasTiempo = (compras, tipo) => {
             if (!metricas.porUsuario[compra.user]) {
                 metricas.porUsuario[compra.user] = {
                     usuario: compra.user,
+                    nombreUsuario: compra.responsable?.name || 'Sin nombre',
+                    emailUsuario: compra.responsable?.email || 'Sin email',
                     totalCompras: 0,
                     tiempoPromedioAsignacionAutorizacion: 0,
                     tiempoPromedioAutorizacionContabilizacion: 0,
                     tiempoPromedioContabilizacionTesoreria: 0,
                     tiempoPromedioTotal: 0,
-                    comprasConTiempoCompleto: 0
+                    comprasConTiempoCompleto: 0,
+                    totalValor: 0,
+                    comprasCompletadas: 0,
+                    comprasPendientes: 0,
+                    tiemposIndividuales: []
                 };
             }
             
             metricas.porUsuario[compra.user].totalCompras++;
+            metricas.porUsuario[compra.user].totalValor += parseFloat(compra.valor) || 0;
+            
+            // Contar compras completadas vs pendientes
+            if (compra.fechaTesoreria) {
+                metricas.porUsuario[compra.user].comprasCompletadas++;
+            } else {
+                metricas.porUsuario[compra.user].comprasPendientes++;
+            }
+            
+            // Guardar tiempos individuales para análisis
+            metricas.porUsuario[compra.user].tiemposIndividuales.push({
+                id: compra.id,
+                emisor: compra.emisor,
+                numero: compra.numero,
+                valor: compra.valor,
+                tiempoAsignacionAutorizacion: tiempoAsignacionAutorizacion,
+                tiempoAutorizacionContabilizacion: tiempoAutorizacionContabilizacion,
+                tiempoContabilizacionTesoreria: tiempoContabilizacionTesoreria,
+                tiempoTotal: tiempoTotal,
+                fecha: compra.fecha
+            });
             
             if (tiempoAsignacionAutorizacion !== null) {
                 metricas.porUsuario[compra.user].tiempoPromedioAsignacionAutorizacion += tiempoAsignacionAutorizacion;
@@ -1074,6 +1129,7 @@ const calcularMetricasTiempo = (compras, tipo) => {
     // Calcular promedios por usuario
     if (tipo === 'porUsuario' || tipo === 'ambos') {
         Object.values(metricas.porUsuario).forEach(usuario => {
+            // Calcular promedios de tiempo
             if (usuario.comprasConTiempoCompleto > 0) {
                 usuario.tiempoPromedioTotal = (usuario.tiempoPromedioTotal / usuario.comprasConTiempoCompleto).toFixed(2);
             }
@@ -1082,7 +1138,29 @@ const calcularMetricasTiempo = (compras, tipo) => {
                 usuario.tiempoPromedioAutorizacionContabilizacion = (usuario.tiempoPromedioAutorizacionContabilizacion / usuario.totalCompras).toFixed(2);
                 usuario.tiempoPromedioContabilizacionTesoreria = (usuario.tiempoPromedioContabilizacionTesoreria / usuario.totalCompras).toFixed(2);
             }
+            
+            // Calcular métricas adicionales
+            usuario.valorPromedio = (usuario.totalValor / usuario.totalCompras).toFixed(2);
+            usuario.porcentajeCompletado = ((usuario.comprasCompletadas / usuario.totalCompras) * 100).toFixed(1);
+            usuario.eficiencia = usuario.comprasConTiempoCompleto > 0 ? 
+                (usuario.comprasConTiempoCompleto / usuario.totalCompras * 100).toFixed(1) : '0.0';
+            
+            // Ordenar tiempos individuales por fecha (más reciente primero)
+            usuario.tiemposIndividuales.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            
+            // Calcular estadísticas adicionales
+            const tiemposValidos = usuario.tiemposIndividuales.filter(t => t.tiempoTotal !== null);
+            if (tiemposValidos.length > 0) {
+                usuario.tiempoMinimo = Math.min(...tiemposValidos.map(t => t.tiempoTotal)).toFixed(2);
+                usuario.tiempoMaximo = Math.max(...tiemposValidos.map(t => t.tiempoTotal)).toFixed(2);
+                usuario.desviacionEstandar = calcularDesviacionEstandar(tiemposValidos.map(t => t.tiempoTotal)).toFixed(2);
+            }
         });
+        
+        // Ordenar usuarios por total de compras (descendente)
+        metricas.porUsuario = Object.fromEntries(
+            Object.entries(metricas.porUsuario).sort((a, b) => b[1].totalCompras - a[1].totalCompras)
+        );
     }
     
     return metricas;
@@ -1101,6 +1179,17 @@ const calcularDiferenciaDias = (fechaInicio, fechaFin) => {
     const diferenciaDias = diferenciaMs / (1000 * 60 * 60 * 24);
     
     return Math.max(0, diferenciaDias); // No permitir días negativos
+};
+
+// Función auxiliar para calcular desviación estándar
+const calcularDesviacionEstandar = (valores) => {
+    if (valores.length === 0) return 0;
+    
+    const media = valores.reduce((sum, val) => sum + val, 0) / valores.length;
+    const diferenciasCuadrado = valores.map(val => Math.pow(val - media, 2));
+    const varianza = diferenciasCuadrado.reduce((sum, diff) => sum + diff, 0) / valores.length;
+    
+    return Math.sqrt(varianza);
 };
 
 export {
