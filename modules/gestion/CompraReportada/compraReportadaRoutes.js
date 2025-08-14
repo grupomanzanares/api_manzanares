@@ -1,7 +1,7 @@
 import express from 'express';
 import { apiAuth } from '../../../auth/middleware/apiauth.js';
 import { validateCreateCompraReportada, validateGetCompraReportada } from './compraReportadaValidator.js';
-import { createCompraReportada, deleteCompraReportada, getComprasReportadas, getCompraReportada, updateCompraReportada, bulkUpsertComprasReportadas, conciliarCompras, getComprasPorAutorizar, ejecutarEnvioCorreosProgramados, getMedicionesTiempo } from './compraReportadaController.js';
+import { createCompraReportada, deleteCompraReportada, getComprasReportadas, getCompraReportada, updateCompraReportada, bulkUpsertComprasReportadas, conciliarCompras, getComprasPorAutorizar, ejecutarEnvioCorreosProgramados, getMedicionesTiempo, getCentrosCostoPorResponsable } from './compraReportadaController.js';
 import upload from '../../../middleware/uploadPdf.js';
 import uploadAdjAutorizador from '../../../middleware/uploadAdjAutorizador.js';
 
@@ -12,6 +12,7 @@ const router = express.Router();
 router.get('/', apiAuth, getComprasReportadas)
 router.get('/por-autorizar', apiAuth, getComprasPorAutorizar)
 router.get('/mediciones-tiempo', apiAuth, getMedicionesTiempo)
+router.get('/centros-costo-por-responsable', apiAuth, getCentrosCostoPorResponsable)
 router.get('/:id', apiAuth, validateGetCompraReportada,  getCompraReportada)
 router.post('/create', apiAuth, validateCreateCompraReportada, createCompraReportada)
 

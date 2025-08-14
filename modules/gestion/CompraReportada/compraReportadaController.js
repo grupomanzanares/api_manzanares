@@ -899,6 +899,105 @@ const ejecutarEnvioCorreosProgramados = async (req, res) => {
     }
 };
 
+// Centros de costo por responsable (solo código y nombre, últimos 3 meses por defecto)
+const getCentrosCostoPorResponsable = async (req, res) => {
+    try {
+        const { responsableId, empresa: empresaNit } = req.query;
+
+        const fechaFin = new Date();
+        const fechaInicio = new Date();
+        fechaInicio.setMonth(fechaInicio.getMonth() - 3);
+
+        const whereClause = {
+            habilitado: true,
+            ccosto: { [Op.ne]: null },
+            fecha: { [Op.between]: [fechaInicio, fechaFin] }
+        };
+
+        if (empresaNit) {
+            whereClause.empresa = empresaNit;
+        }
+        if (responsableId) {
+            whereClause.responsableId = responsableId;
+        }
+
+        const registros = await compraReportada.findAll({
+            where: whereClause,
+            attributes: ['ccosto', 'empresa', 'responsableId'],
+            include: [{
+                model: User,
+                as: 'responsable',
+                attributes: ['id', 'name']
+            }]
+        });
+
+        // Cargar empresas y centros de costo para resolver nombre
+        const [empresasAll, centrosCostoAll] = await Promise.all([
+            empresa.findAll({ attributes: ['id', 'nit'] }),
+            ccosto.findAll({ attributes: ['codigo', 'nombre', 'empresaId'] })
+        ]);
+
+        const nitToEmpresaId = new Map(empresasAll.map(e => [e.nit, e.id]));
+        const findCcostoNombre = (codigo, nit) => {
+            const empId = nitToEmpresaId.get(nit);
+            if (!empId) return null;
+            const c = centrosCostoAll.find(x => x.codigo === codigo && x.empresaId === empId);
+            return c?.nombre || null;
+        };
+
+        // Si se solicita por un responsable específico, devolver lista plana de centros {codigo, nombre}
+        if (responsableId) {
+            const mapa = new Map();
+            for (const r of registros) {
+                if (!r.ccosto) continue;
+                const nombre = findCcostoNombre(r.ccosto, r.empresa);
+                if (!mapa.has(r.ccosto)) {
+                    mapa.set(r.ccosto, { codigo: r.ccosto, nombre });
+                }
+            }
+            return res.status(200).json({
+                success: true,
+                data: Array.from(mapa.values()),
+                filtros: { responsableId, empresa: empresaNit || null, rango: 'ultimos_3_meses' }
+            });
+        }
+
+        // Agrupar por responsable
+        const agrupado = new Map();
+        for (const r of registros) {
+            if (!r.responsableId || !r.ccosto) continue;
+            if (!agrupado.has(r.responsableId)) {
+                agrupado.set(r.responsableId, {
+                    responsableId: r.responsableId,
+                    nombreResponsable: r.responsable?.name || 'Sin nombre',
+                    centrosCosto: new Map()
+                });
+            }
+            const entry = agrupado.get(r.responsableId);
+            if (!entry.centrosCosto.has(r.ccosto)) {
+                const nombre = findCcostoNombre(r.ccosto, r.empresa);
+                entry.centrosCosto.set(r.ccosto, { codigo: r.ccosto, nombre });
+            }
+        }
+
+        const data = Array.from(agrupado.values()).map(x => ({
+            responsableId: x.responsableId,
+            nombreResponsable: x.nombreResponsable,
+            centrosCosto: Array.from(x.centrosCosto.values())
+        }));
+
+        res.status(200).json({
+            success: true,
+            data,
+            totalResponsables: data.length,
+            filtros: { empresa: empresaNit || null, rango: 'ultimos_3_meses' }
+        });
+    } catch (error) {
+        console.error('❌ Error en getCentrosCostoPorResponsable:', error);
+        handleHttpError(res, 'Error obteniendo centros de costo por responsable');
+    }
+};
+
 // Función para obtener mediciones de tiempo
 const getMedicionesTiempo = async (req, res) => {
     try {
