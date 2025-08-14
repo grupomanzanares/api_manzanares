@@ -1117,7 +1117,7 @@ const calcularMetricasTiempo = (compras, tipo) => {
     metricas.general.comprasConTiempoCompleto = contadorConTiempoCompleto;
     metricas.general.comprasPendientes = compras.length - contadorConTiempoCompleto;
     
-    // Calcular promedios por responsable
+    // Calcular promedios por responsable.....
     if (tipo === 'porUsuario' || tipo === 'ambos') {
         Object.values(metricas.porResponsable).forEach(responsable => {
             // Calcular promedios de tiempo
