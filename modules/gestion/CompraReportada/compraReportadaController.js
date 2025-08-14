@@ -1248,5 +1248,6 @@ export {
     conciliarCompras,
     getComprasPorAutorizar,
     ejecutarEnvioCorreosProgramados,
-    getMedicionesTiempo
+    getMedicionesTiempo,
+    getCentrosCostoPorResponsable
 }
