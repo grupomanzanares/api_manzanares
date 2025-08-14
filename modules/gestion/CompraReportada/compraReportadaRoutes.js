@@ -12,6 +12,7 @@ const router = express.Router();
 router.get('/', apiAuth, getComprasReportadas)
 router.get('/por-autorizar', apiAuth, getComprasPorAutorizar)
 router.get('/mediciones-tiempo', apiAuth, getMedicionesTiempo)
+router.get('/centros-costo-por-responsable', apiAuth, getCentrosCostoPorResponsable)
 router.get('/:id', apiAuth, validateGetCompraReportada,  getCompraReportada)
 router.post('/create', apiAuth, validateCreateCompraReportada, createCompraReportada)
 
