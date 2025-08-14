@@ -89,6 +89,11 @@ const compraReportada = db.define('compras_reportadas', {
         allowNull: false,
         defaultValue: false 
     },
+    impreso:{
+        type: DataTypes.BOOLEAN, 
+        allowNull: false,
+        defaultValue: false 
+    },
     user: {
         type: DataTypes.STRING(50),
         allowNull: false
@@ -117,6 +122,10 @@ const compraReportada = db.define('compras_reportadas', {
         type: DataTypes.DATE,
         allowNull: true
     },
+    fechaImpresion: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },    
     tipoDctoErp: {
         type: DataTypes.STRING(4),
         allowNull: true
