@@ -899,6 +899,210 @@ const ejecutarEnvioCorreosProgramados = async (req, res) => {
     }
 };
 
+// Función para obtener mediciones de tiempo
+const getMedicionesTiempo = async (req, res) => {
+    try {
+        const { tipo, usuario, fechaInicio, fechaFin, empresa } = req.query;
+        
+        let whereClause = { habilitado: true };
+        
+        // Filtros de fecha
+        if (fechaInicio && fechaFin) {
+            whereClause.fecha = {
+                [Op.between]: [new Date(fechaInicio), new Date(fechaFin)]
+            };
+        }
+        
+        // Filtro por usuario
+        if (usuario) {
+            whereClause.user = usuario;
+        }
+        
+        // Filtro por empresa
+        if (empresa) {
+            whereClause.empresa = empresa;
+        }
+        
+        const compras = await compraReportada.findAll({
+            where: whereClause,
+            attributes: [
+                'id',
+                'fechaAsignacion',
+                'fechaAutorizacion', 
+                'fechaContabilizacion',
+                'fechaTesoreria',
+                'fechaImpresion',
+                'user',
+                'empresa',
+                'valor',
+                'emisor',
+                'numero'
+            ],
+            order: [['fecha', 'DESC']]
+        });
+        
+        // Calcular métricas de tiempo
+        const metricas = calcularMetricasTiempo(compras, tipo);
+        
+        res.status(200).json({
+            success: true,
+            data: metricas,
+            totalRegistros: compras.length,
+            filtros: { tipo, usuario, fechaInicio, fechaFin, empresa }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error en getMedicionesTiempo:', error);
+        handleHttpError(res, 'Error obteniendo mediciones de tiempo');
+    }
+};
+
+// Función auxiliar para calcular métricas de tiempo
+const calcularMetricasTiempo = (compras, tipo) => {
+    const metricas = {
+        general: {
+            totalCompras: compras.length,
+            tiempoPromedioAsignacionAutorizacion: 0,
+            tiempoPromedioAutorizacionContabilizacion: 0,
+            tiempoPromedioContabilizacionTesoreria: 0,
+            tiempoPromedioTotal: 0,
+            comprasConTiempoCompleto: 0,
+            comprasPendientes: 0
+        },
+        porUsuario: {}
+    };
+    
+    let totalTiempoAsignacionAutorizacion = 0;
+    let totalTiempoAutorizacionContabilizacion = 0;
+    let totalTiempoContabilizacionTesoreria = 0;
+    let totalTiempoTotal = 0;
+    let contadorConTiempoCompleto = 0;
+    
+    compras.forEach(compra => {
+        // Calcular tiempos en días
+        const tiempoAsignacionAutorizacion = calcularDiferenciaDias(
+            compra.fechaAsignacion, 
+            compra.fechaAutorizacion
+        );
+        
+        const tiempoAutorizacionContabilizacion = calcularDiferenciaDias(
+            compra.fechaAutorizacion, 
+            compra.fechaContabilizacion
+        );
+        
+        const tiempoContabilizacionTesoreria = calcularDiferenciaDias(
+            compra.fechaContabilizacion, 
+            compra.fechaTesoreria
+        );
+        
+        const tiempoTotal = calcularDiferenciaDias(
+            compra.fechaAsignacion, 
+            compra.fechaTesoreria
+        );
+        
+        // Acumular para promedios generales
+        if (tiempoAsignacionAutorizacion !== null) {
+            totalTiempoAsignacionAutorizacion += tiempoAsignacionAutorizacion;
+        }
+        if (tiempoAutorizacionContabilizacion !== null) {
+            totalTiempoAutorizacionContabilizacion += tiempoAutorizacionContabilizacion;
+        }
+        if (tiempoContabilizacionTesoreria !== null) {
+            totalTiempoContabilizacionTesoreria += tiempoContabilizacionTesoreria;
+        }
+        if (tiempoTotal !== null) {
+            totalTiempoTotal += tiempoTotal;
+            contadorConTiempoCompleto++;
+        }
+        
+        // Métricas por usuario
+        if (tipo === 'porUsuario' || tipo === 'ambos') {
+            if (!metricas.porUsuario[compra.user]) {
+                metricas.porUsuario[compra.user] = {
+                    usuario: compra.user,
+                    totalCompras: 0,
+                    tiempoPromedioAsignacionAutorizacion: 0,
+                    tiempoPromedioAutorizacionContabilizacion: 0,
+                    tiempoPromedioContabilizacionTesoreria: 0,
+                    tiempoPromedioTotal: 0,
+                    comprasConTiempoCompleto: 0
+                };
+            }
+            
+            metricas.porUsuario[compra.user].totalCompras++;
+            
+            if (tiempoAsignacionAutorizacion !== null) {
+                metricas.porUsuario[compra.user].tiempoPromedioAsignacionAutorizacion += tiempoAsignacionAutorizacion;
+            }
+            if (tiempoAutorizacionContabilizacion !== null) {
+                metricas.porUsuario[compra.user].tiempoPromedioAutorizacionContabilizacion += tiempoAutorizacionContabilizacion;
+            }
+            if (tiempoContabilizacionTesoreria !== null) {
+                metricas.porUsuario[compra.user].tiempoPromedioContabilizacionTesoreria += tiempoContabilizacionTesoreria;
+            }
+            if (tiempoTotal !== null) {
+                metricas.porUsuario[compra.user].tiempoPromedioTotal += tiempoTotal;
+                metricas.porUsuario[compra.user].comprasConTiempoCompleto++;
+            }
+        }
+    });
+    
+    // Calcular promedios generales
+    const comprasConAsignacionAutorizacion = compras.filter(c => c.fechaAsignacion && c.fechaAutorizacion).length;
+    const comprasConAutorizacionContabilizacion = compras.filter(c => c.fechaAutorizacion && c.fechaContabilizacion).length;
+    const comprasConContabilizacionTesoreria = compras.filter(c => c.fechaContabilizacion && c.fechaTesoreria).length;
+    
+    metricas.general.tiempoPromedioAsignacionAutorizacion = 
+        comprasConAsignacionAutorizacion > 0 ? 
+        (totalTiempoAsignacionAutorizacion / comprasConAsignacionAutorizacion).toFixed(2) : 0;
+    
+    metricas.general.tiempoPromedioAutorizacionContabilizacion = 
+        comprasConAutorizacionContabilizacion > 0 ? 
+        (totalTiempoAutorizacionContabilizacion / comprasConAutorizacionContabilizacion).toFixed(2) : 0;
+    
+    metricas.general.tiempoPromedioContabilizacionTesoreria = 
+        comprasConContabilizacionTesoreria > 0 ? 
+        (totalTiempoContabilizacionTesoreria / comprasConContabilizacionTesoreria).toFixed(2) : 0;
+    
+    metricas.general.tiempoPromedioTotal = 
+        contadorConTiempoCompleto > 0 ? 
+        (totalTiempoTotal / contadorConTiempoCompleto).toFixed(2) : 0;
+    
+    metricas.general.comprasConTiempoCompleto = contadorConTiempoCompleto;
+    metricas.general.comprasPendientes = compras.length - contadorConTiempoCompleto;
+    
+    // Calcular promedios por usuario
+    if (tipo === 'porUsuario' || tipo === 'ambos') {
+        Object.values(metricas.porUsuario).forEach(usuario => {
+            if (usuario.comprasConTiempoCompleto > 0) {
+                usuario.tiempoPromedioTotal = (usuario.tiempoPromedioTotal / usuario.comprasConTiempoCompleto).toFixed(2);
+            }
+            if (usuario.totalCompras > 0) {
+                usuario.tiempoPromedioAsignacionAutorizacion = (usuario.tiempoPromedioAsignacionAutorizacion / usuario.totalCompras).toFixed(2);
+                usuario.tiempoPromedioAutorizacionContabilizacion = (usuario.tiempoPromedioAutorizacionContabilizacion / usuario.totalCompras).toFixed(2);
+                usuario.tiempoPromedioContabilizacionTesoreria = (usuario.tiempoPromedioContabilizacionTesoreria / usuario.totalCompras).toFixed(2);
+            }
+        });
+    }
+    
+    return metricas;
+};
+
+// Función auxiliar para calcular diferencia en días
+const calcularDiferenciaDias = (fechaInicio, fechaFin) => {
+    if (!fechaInicio || !fechaFin) return null;
+    
+    const inicio = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+    
+    if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) return null;
+    
+    const diferenciaMs = fin.getTime() - inicio.getTime();
+    const diferenciaDias = diferenciaMs / (1000 * 60 * 60 * 24);
+    
+    return Math.max(0, diferenciaDias); // No permitir días negativos
+};
+
 export {
     getComprasReportadas,
     getCompraReportadaJson,
@@ -909,5 +1113,6 @@ export {
     bulkUpsertComprasReportadas,
     conciliarCompras,
     getComprasPorAutorizar,
-    ejecutarEnvioCorreosProgramados
+    ejecutarEnvioCorreosProgramados,
+    getMedicionesTiempo
 }
