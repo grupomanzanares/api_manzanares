@@ -953,29 +953,31 @@ const getMedicionesTiempo = async (req, res) => {
         // Calcular métricas de tiempo
         const metricas = calcularMetricasTiempo(compras, tipo);
         
-        // Agregar información adicional de usuarios únicos
-        const usuariosUnicos = [...new Set(compras.map(c => c.user))];
-        const resumenUsuarios = usuariosUnicos.map(userId => {
-            const comprasUsuario = compras.filter(c => c.user === userId);
-            const totalValor = comprasUsuario.reduce((sum, c) => sum + (parseFloat(c.valor) || 0), 0);
+        // Agregar información adicional de responsables únicos
+        const responsablesUnicos = [...new Set(compras.filter(c => c.responsableId).map(c => c.responsableId))];
+        const resumenResponsables = responsablesUnicos.map(responsableId => {
+            const comprasResponsable = compras.filter(c => c.responsableId === responsableId);
+            const totalValor = comprasResponsable.reduce((sum, c) => sum + (parseFloat(c.valor) || 0), 0);
             
             return {
-                usuario: userId,
-                totalCompras: comprasUsuario.length,
+                responsableId: responsableId,
+                nombreResponsable: comprasResponsable[0]?.responsable?.name || 'Sin nombre',
+                emailResponsable: comprasResponsable[0]?.responsable?.email || 'Sin email',
+                totalCompras: comprasResponsable.length,
                 totalValor: totalValor.toFixed(2),
-                valorPromedio: (totalValor / comprasUsuario.length).toFixed(2),
-                comprasCompletadas: comprasUsuario.filter(c => c.fechaTesoreria).length,
-                comprasPendientes: comprasUsuario.filter(c => !c.fechaTesoreria).length,
-                porcentajeCompletado: ((comprasUsuario.filter(c => c.fechaTesoreria).length / comprasUsuario.length) * 100).toFixed(1)
+                valorPromedio: (totalValor / comprasResponsable.length).toFixed(2),
+                comprasCompletadas: comprasResponsable.filter(c => c.fechaTesoreria).length,
+                comprasPendientes: comprasResponsable.filter(c => !c.fechaTesoreria).length,
+                porcentajeCompletado: ((comprasResponsable.filter(c => c.fechaTesoreria).length / comprasResponsable.length) * 100).toFixed(1)
             };
         });
         
         res.status(200).json({
             success: true,
             data: metricas,
-            resumenUsuarios: resumenUsuarios.sort((a, b) => b.totalCompras - a.totalCompras),
+            resumenResponsables: resumenResponsables.sort((a, b) => b.totalCompras - a.totalCompras),
             totalRegistros: compras.length,
-            totalUsuarios: usuariosUnicos.length,
+            totalResponsables: responsablesUnicos.length,
             filtros: { tipo, usuario, fechaInicio, fechaFin, empresa }
         });
         
@@ -997,7 +999,7 @@ const calcularMetricasTiempo = (compras, tipo) => {
             comprasConTiempoCompleto: 0,
             comprasPendientes: 0
         },
-        porUsuario: {}
+        porResponsable: {}
     };
     
     let totalTiempoAsignacionAutorizacion = 0;
@@ -1043,47 +1045,50 @@ const calcularMetricasTiempo = (compras, tipo) => {
             contadorConTiempoCompleto++;
         }
         
-        // Métricas por usuario
+        // Métricas por responsable (quien autoriza)
         if (tipo === 'porUsuario' || tipo === 'ambos') {
-            if (!metricas.porUsuario[compra.user]) {
-                metricas.porUsuario[compra.user] = {
-                    usuario: compra.user,
-                    nombreUsuario: compra.responsable?.name || 'Sin nombre',
-                    emailUsuario: compra.responsable?.email || 'Sin email',
-                    totalCompras: 0,
-                    tiempoPromedioAsignacionAutorizacion: 0,
-                    tiempoPromedioAutorizacionContabilizacion: 0,
-                    tiempoPromedioContabilizacionTesoreria: 0,
-                    tiempoPromedioTotal: 0,
-                    comprasConTiempoCompleto: 0,
-                    totalValor: 0,
-                    comprasCompletadas: 0,
-                    comprasPendientes: 0
-                };
-            }
-            
-            metricas.porUsuario[compra.user].totalCompras++;
-            metricas.porUsuario[compra.user].totalValor += parseFloat(compra.valor) || 0;
-            
-            // Contar compras completadas vs pendientes
-            if (compra.fechaTesoreria) {
-                metricas.porUsuario[compra.user].comprasCompletadas++;
-            } else {
-                metricas.porUsuario[compra.user].comprasPendientes++;
-            }
-            
-            if (tiempoAsignacionAutorizacion !== null) {
-                metricas.porUsuario[compra.user].tiempoPromedioAsignacionAutorizacion += tiempoAsignacionAutorizacion;
-            }
-            if (tiempoAutorizacionContabilizacion !== null) {
-                metricas.porUsuario[compra.user].tiempoPromedioAutorizacionContabilizacion += tiempoAutorizacionContabilizacion;
-            }
-            if (tiempoContabilizacionTesoreria !== null) {
-                metricas.porUsuario[compra.user].tiempoPromedioContabilizacionTesoreria += tiempoContabilizacionTesoreria;
-            }
-            if (tiempoTotal !== null) {
-                metricas.porUsuario[compra.user].tiempoPromedioTotal += tiempoTotal;
-                metricas.porUsuario[compra.user].comprasConTiempoCompleto++;
+            // Solo procesar si hay un responsable asignado
+            if (compra.responsableId) {
+                if (!metricas.porResponsable[compra.responsableId]) {
+                    metricas.porResponsable[compra.responsableId] = {
+                        responsableId: compra.responsableId,
+                        nombreResponsable: compra.responsable?.name || 'Sin nombre',
+                        emailResponsable: compra.responsable?.email || 'Sin email',
+                        totalCompras: 0,
+                        tiempoPromedioAsignacionAutorizacion: 0,
+                        tiempoPromedioAutorizacionContabilizacion: 0,
+                        tiempoPromedioContabilizacionTesoreria: 0,
+                        tiempoPromedioTotal: 0,
+                        comprasConTiempoCompleto: 0,
+                        totalValor: 0,
+                        comprasCompletadas: 0,
+                        comprasPendientes: 0
+                    };
+                }
+                
+                metricas.porResponsable[compra.responsableId].totalCompras++;
+                metricas.porResponsable[compra.responsableId].totalValor += parseFloat(compra.valor) || 0;
+                
+                // Contar compras completadas vs pendientes
+                if (compra.fechaTesoreria) {
+                    metricas.porResponsable[compra.responsableId].comprasCompletadas++;
+                } else {
+                    metricas.porResponsable[compra.responsableId].comprasPendientes++;
+                }
+                
+                if (tiempoAsignacionAutorizacion !== null) {
+                    metricas.porResponsable[compra.responsableId].tiempoPromedioAsignacionAutorizacion += tiempoAsignacionAutorizacion;
+                }
+                if (tiempoAutorizacionContabilizacion !== null) {
+                    metricas.porResponsable[compra.responsableId].tiempoPromedioAutorizacionContabilizacion += tiempoAutorizacionContabilizacion;
+                }
+                if (tiempoContabilizacionTesoreria !== null) {
+                    metricas.porResponsable[compra.responsableId].tiempoPromedioContabilizacionTesoreria += tiempoContabilizacionTesoreria;
+                }
+                if (tiempoTotal !== null) {
+                    metricas.porResponsable[compra.responsableId].tiempoPromedioTotal += tiempoTotal;
+                    metricas.porResponsable[compra.responsableId].comprasConTiempoCompleto++;
+                }
             }
         }
     });
@@ -1112,29 +1117,29 @@ const calcularMetricasTiempo = (compras, tipo) => {
     metricas.general.comprasConTiempoCompleto = contadorConTiempoCompleto;
     metricas.general.comprasPendientes = compras.length - contadorConTiempoCompleto;
     
-    // Calcular promedios por usuario
+    // Calcular promedios por responsable
     if (tipo === 'porUsuario' || tipo === 'ambos') {
-        Object.values(metricas.porUsuario).forEach(usuario => {
+        Object.values(metricas.porResponsable).forEach(responsable => {
             // Calcular promedios de tiempo
-            if (usuario.comprasConTiempoCompleto > 0) {
-                usuario.tiempoPromedioTotal = (usuario.tiempoPromedioTotal / usuario.comprasConTiempoCompleto).toFixed(2);
+            if (responsable.comprasConTiempoCompleto > 0) {
+                responsable.tiempoPromedioTotal = (responsable.tiempoPromedioTotal / responsable.comprasConTiempoCompleto).toFixed(2);
             }
-            if (usuario.totalCompras > 0) {
-                usuario.tiempoPromedioAsignacionAutorizacion = (usuario.tiempoPromedioAsignacionAutorizacion / usuario.totalCompras).toFixed(2);
-                usuario.tiempoPromedioAutorizacionContabilizacion = (usuario.tiempoPromedioAutorizacionContabilizacion / usuario.totalCompras).toFixed(2);
-                usuario.tiempoPromedioContabilizacionTesoreria = (usuario.tiempoPromedioContabilizacionTesoreria / usuario.totalCompras).toFixed(2);
+            if (responsable.totalCompras > 0) {
+                responsable.tiempoPromedioAsignacionAutorizacion = (responsable.tiempoPromedioAsignacionAutorizacion / responsable.totalCompras).toFixed(2);
+                responsable.tiempoPromedioAutorizacionContabilizacion = (responsable.tiempoPromedioAutorizacionContabilizacion / responsable.totalCompras).toFixed(2);
+                responsable.tiempoPromedioContabilizacionTesoreria = (responsable.tiempoPromedioContabilizacionTesoreria / responsable.totalCompras).toFixed(2);
             }
             
             // Calcular métricas adicionales
-            usuario.valorPromedio = (usuario.totalValor / usuario.totalCompras).toFixed(2);
-            usuario.porcentajeCompletado = ((usuario.comprasCompletadas / usuario.totalCompras) * 100).toFixed(1);
-            usuario.eficiencia = usuario.comprasConTiempoCompleto > 0 ? 
-                (usuario.comprasConTiempoCompleto / usuario.totalCompras * 100).toFixed(1) : '0.0';
+            responsable.valorPromedio = (responsable.totalValor / responsable.totalCompras).toFixed(2);
+            responsable.porcentajeCompletado = ((responsable.comprasCompletadas / responsable.totalCompras) * 100).toFixed(1);
+            responsable.eficiencia = responsable.comprasConTiempoCompleto > 0 ? 
+                (responsable.comprasConTiempoCompleto / responsable.totalCompras * 100).toFixed(1) : '0.0';
         });
         
-        // Ordenar usuarios por total de compras (descendente)
-        metricas.porUsuario = Object.fromEntries(
-            Object.entries(metricas.porUsuario).sort((a, b) => b[1].totalCompras - a[1].totalCompras)
+        // Ordenar responsables por total de compras (descendente)
+        metricas.porResponsable = Object.fromEntries(
+            Object.entries(metricas.porResponsable).sort((a, b) => b[1].totalCompras - a[1].totalCompras)
         );
     }
     
