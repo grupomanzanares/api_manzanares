@@ -953,31 +953,10 @@ const getMedicionesTiempo = async (req, res) => {
         // Calcular métricas de tiempo
         const metricas = calcularMetricasTiempo(compras, tipo);
         
-        // Agregar información adicional de responsables únicos
-        const responsablesUnicos = [...new Set(compras.filter(c => c.responsableId).map(c => c.responsableId))];
-        const resumenResponsables = responsablesUnicos.map(responsableId => {
-            const comprasResponsable = compras.filter(c => c.responsableId === responsableId);
-            const totalValor = comprasResponsable.reduce((sum, c) => sum + (parseFloat(c.valor) || 0), 0);
-            
-            return {
-                responsableId: responsableId,
-                nombreResponsable: comprasResponsable[0]?.responsable?.name || 'Sin nombre',
-                emailResponsable: comprasResponsable[0]?.responsable?.email || 'Sin email',
-                totalCompras: comprasResponsable.length,
-                totalValor: totalValor.toFixed(2),
-                valorPromedio: (totalValor / comprasResponsable.length).toFixed(2),
-                comprasCompletadas: comprasResponsable.filter(c => c.fechaTesoreria).length,
-                comprasPendientes: comprasResponsable.filter(c => !c.fechaTesoreria).length,
-                porcentajeCompletado: ((comprasResponsable.filter(c => c.fechaTesoreria).length / comprasResponsable.length) * 100).toFixed(1)
-            };
-        });
-        
         res.status(200).json({
             success: true,
             data: metricas,
-            resumenResponsables: resumenResponsables.sort((a, b) => b.totalCompras - a.totalCompras),
             totalRegistros: compras.length,
-            totalResponsables: responsablesUnicos.length,
             filtros: { tipo, usuario, fechaInicio, fechaFin, empresa }
         });
         
