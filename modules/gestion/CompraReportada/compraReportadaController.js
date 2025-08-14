@@ -1109,11 +1109,7 @@ const calcularMetricasTiempo = (compras, tipo) => {
                 responsable.tiempoPromedioContabilizacionTesoreria = (responsable.tiempoPromedioContabilizacionTesoreria / responsable.totalCompras).toFixed(2);
             }
             
-            // Calcular métricas adicionales
-            responsable.valorPromedio = (responsable.totalValor / responsable.totalCompras).toFixed(2);
-            responsable.porcentajeCompletado = ((responsable.comprasCompletadas / responsable.totalCompras) * 100).toFixed(1);
-            responsable.eficiencia = responsable.comprasConTiempoCompleto > 0 ? 
-                (responsable.comprasConTiempoCompleto / responsable.totalCompras * 100).toFixed(1) : '0.0';
+      
         });
         
         // Ordenar responsables por total de compras (descendente)

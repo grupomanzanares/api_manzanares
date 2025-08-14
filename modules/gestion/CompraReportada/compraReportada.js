@@ -141,4 +141,3 @@ const compraReportada = db.define('compras_reportadas', {
 });
 
 export default compraReportada;
-
