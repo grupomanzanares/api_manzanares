@@ -68,7 +68,6 @@ export {
 // Validador mínimo para actualización de impresión
 const validateUpdateImpresion = [
     check('id').exists().notEmpty(),
-    body('userMod').exists().notEmpty().isString(),
     body('impreso').optional().isBoolean(),
     body('fechaImpresion').optional().isISO8601(),
     (req, res, next) => {
