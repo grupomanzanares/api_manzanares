@@ -30,7 +30,7 @@ router.put(
 router.put(
     '/impresion/:id',
     apiAuth,
-    validateUpdateImpresion,
+    validateGetCompraReportada,
     updateCompraImpresion
 );
 
