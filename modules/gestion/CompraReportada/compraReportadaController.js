@@ -904,6 +904,15 @@ const getCentrosCostoPorResponsable = async (req, res) => {
     try {
         const { responsableId, empresa: empresaNit } = req.query;
 
+        // Validar que se envíe el NIT de la empresa (obligatorio)
+        if (!empresaNit) {
+            return res.status(400).json({
+                success: false,
+                error: 'El parámetro empresa (NIT) es obligatorio',
+                ejemplo: '/centros-costo-por-responsable?empresa=900999888&responsableId=2'
+            });
+        }
+
         const fechaFin = new Date();
         const fechaInicio = new Date();
         fechaInicio.setMonth(fechaInicio.getMonth() - 3);
@@ -911,12 +920,10 @@ const getCentrosCostoPorResponsable = async (req, res) => {
         const whereClause = {
             habilitado: true,
             ccosto: { [Op.ne]: null },
+            empresa: empresaNit, // Siempre filtrar por empresa
             fecha: { [Op.between]: [fechaInicio, fechaFin] }
         };
 
-        if (empresaNit) {
-            whereClause.empresa = empresaNit;
-        }
         if (responsableId) {
             whereClause.responsableId = responsableId;
         }
@@ -958,7 +965,7 @@ const getCentrosCostoPorResponsable = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 data: Array.from(mapa.values()),
-                filtros: { responsableId, empresa: empresaNit || null, rango: 'ultimos_3_meses' }
+                filtros: { responsableId, empresa: empresaNit, rango: 'ultimos_3_meses' }
             });
         }
 
@@ -990,12 +997,79 @@ const getCentrosCostoPorResponsable = async (req, res) => {
             success: true,
             data,
             totalResponsables: data.length,
-            filtros: { empresa: empresaNit || null, rango: 'ultimos_3_meses' }
+            filtros: { empresa: empresaNit, rango: 'ultimos_3_meses' }
         });
     } catch (error) {
         console.error('❌ Error en getCentrosCostoPorResponsable:', error);
         handleHttpError(res, 'Error obteniendo centros de costo por responsable');
     }
+};
+
+// Responsables comunes por emisor (usando solo matriz_autorizaciones)
+const getResponsablesPorEmisor = async (req, res) => {
+	try {
+		const { empresa: empresaNit, emisor } = req.query;
+
+		if (!empresaNit || !emisor) {
+			return res.status(400).json({
+				success: false,
+				error: 'Los parámetros empresa (NIT) y emisor son obligatorios',
+				ejemplo: '/responsables-por-emisor?empresa=900999888&emisor=890123456'
+			});
+		}
+
+		// Buscar responsables configurados para la combinación empresa+emisor
+		const filasMatriz = await matrizAutorizaciones.findAll({
+			where: { empresa: empresaNit, emisor },
+			attributes: ['id', 'empresa', 'emisor', 'responsableId', 'fechaAutorizacion', 'updatedAt'],
+			include: [{
+				model: User,
+				as: 'responsable',
+				attributes: ['id', 'name', 'email', 'celphone']
+			}],
+			order: [['fechaAutorizacion', 'DESC']]
+		});
+
+		// Agrupar por responsableId para evitar duplicados y contar ocurrencias
+		const mapa = new Map();
+		for (const fila of filasMatriz) {
+			const resp = fila.responsable;
+			if (!resp) continue;
+			const key = resp.id;
+			const existente = mapa.get(key);
+			if (!existente) {
+				mapa.set(key, {
+					id: resp.id,
+					name: resp.name,
+					email: resp.email,
+					celphone: resp.celphone,
+					veces: 1,
+					ultimaFechaAutorizacion: fila.fechaAutorizacion
+				});
+			} else {
+				existente.veces += 1;
+				if (fila.fechaAutorizacion && (!existente.ultimaFechaAutorizacion || new Date(fila.fechaAutorizacion) > new Date(existente.ultimaFechaAutorizacion))) {
+					existente.ultimaFechaAutorizacion = fila.fechaAutorizacion;
+				}
+			}
+		}
+
+		const data = Array.from(mapa.values()).sort((a, b) => {
+			// Ordenar por número de veces (desc), luego por última fecha (desc)
+			if (b.veces !== a.veces) return b.veces - a.veces;
+			return new Date(b.ultimaFechaAutorizacion) - new Date(a.ultimaFechaAutorizacion);
+		});
+
+		return res.status(200).json({
+			success: true,
+			data,
+			total: data.length,
+			filtros: { empresa: empresaNit, emisor }
+		});
+	} catch (error) {
+		console.error('❌ Error en getResponsablesPorEmisor:', error);
+		handleHttpError(res, 'Error obteniendo responsables por emisor');
+	}
 };
 
 // Función para obtener mediciones de tiempo
@@ -1249,5 +1323,6 @@ export {
     getComprasPorAutorizar,
     ejecutarEnvioCorreosProgramados,
     getMedicionesTiempo,
-    getCentrosCostoPorResponsable
+    getCentrosCostoPorResponsable,
+    getResponsablesPorEmisor
 }
