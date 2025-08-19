@@ -68,8 +68,22 @@ export {
 // Validador mínimo para actualización de impresión
 const validateUpdateImpresion = [
     check('id').exists().notEmpty(),
-    body('impreso').optional().isBoolean(),
-    body('fechaImpresion').optional().isISO8601(),
+    // Acepta booleano real o strings/números '1'/'0'
+    body('impreso')
+        .optional()
+        .custom((value) => {
+            const validValues = [true, false, 'true', 'false', 1, 0, '1', '0'];
+            if (validValues.includes(value)) return true;
+            throw new Error('impreso debe ser booleano o 1/0');
+        }),
+    // Acepta ISO8601, null, string vacío
+    body('fechaImpresion')
+        .optional({ nullable: true })
+        .custom((value) => {
+            if (value === '' || value === null) return true;
+            return !isNaN(new Date(value).getTime());
+        })
+        .withMessage('fechaImpresion debe ser una fecha válida'),
     (req, res, next) => {
         try {
             validationResult(req).throw()

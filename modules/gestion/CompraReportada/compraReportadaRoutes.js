@@ -30,6 +30,7 @@ router.put(
 router.put(
     '/impresion/:id',
     apiAuth,
+    upload.none(),
     validateUpdateImpresion,
     updateCompraImpresion
 );
