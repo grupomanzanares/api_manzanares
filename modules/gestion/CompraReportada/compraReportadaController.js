@@ -496,37 +496,39 @@ const updateCompraReportada = async (req, res) => {
 }
 
 
-// Actualización mínima para marcar impresión
 const updateCompraImpresion = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { impreso, fechaImpresion, userMod } = req.body;
 
- 
+
+    try {
+        const { id } = req.params
+        const body = req.body
+
+
         // Ejecuta la actualización
         const [updatedCount] = await compraReportada.update(body, {
-                where: { id }
-            });
-        
-            if (updatedCount === 0) {
-                return res.status(404).json({
-                message: `${entity} no encontrado o no se realizaron cambios`
-                });
-             }
-        
-             const registro = await compraReportada.findByPk(id, {
-            attributes: ['id', 'impreso', 'fechaImpresion', 'userMod']
+            where: { id }
         });
 
-        return res.status(200).json({
-            message: 'Impresión actualizada correctamente',
-            data: registro
+        if (updatedCount === 0) {
+            return res.status(404).json({
+                message: `${entity} no encontrado o no se realizaron cambios`
+            });
+        }
+
+        const updateRegistro = await compraReportada.findByPk(id);
+
+
+        res.status(200).json({
+            message: ` ${entity} actualizado correctamente `,
+            data: updateRegistro
         });
+
     } catch (error) {
-        console.error(error);
-        handleHttpError(res, `No se pudo actualizar impresión de ${entity}`);
+        handleHttpError(res, `No se pudo actualizar ${entity} `)
+        console.error(error)
     }
-};
+}
+
 
 const deleteCompraReportada = async (req, res) => {
     try {
