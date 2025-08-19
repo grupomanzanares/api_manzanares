@@ -497,35 +497,52 @@ const updateCompraReportada = async (req, res) => {
 
 
 const updateCompraImpresion = async (req, res) => {
-
-
     try {
-        const { id } = req.params
-        const body = req.body
+        const { id } = req.params;
+        const { impreso, fechaImpresion } = req.body;
 
+        const cambios = {};
 
-        // Ejecuta la actualización
-        const [updatedCount] = await compraReportada.update(body, {
-            where: { id }
-        });
-
-        if (updatedCount === 0) {
-            return res.status(404).json({
-                message: `${entity} no encontrado o no se realizaron cambios`
-            });
+        // Normalizar y validar 'impreso'
+        if (typeof impreso !== 'undefined') {
+            const impresoTrue = (impreso === true || impreso === 'true' || impreso === 1 || impreso === '1');
+            const impresoFalse = (impreso === false || impreso === 'false' || impreso === 0 || impreso === '0');
+            if (impresoTrue) cambios.impreso = true;
+            else if (impresoFalse) cambios.impreso = false;
         }
 
-        const updateRegistro = await compraReportada.findByPk(id);
+        // Normalizar y validar 'fechaImpresion'
+        if (typeof fechaImpresion !== 'undefined') {
+            if (fechaImpresion === null || fechaImpresion === '') {
+                cambios.fechaImpresion = null;
+            } else {
+                const fecha = new Date(fechaImpresion);
+                if (!isNaN(fecha.getTime())) {
+                    cambios.fechaImpresion = fecha;
+                }
+            }
+        }
 
+        if (Object.keys(cambios).length === 0) {
+            return res.status(400).json({ message: 'No se enviaron campos válidos para actualizar (impreso, fechaImpresion)' });
+        }
 
-        res.status(200).json({
-            message: ` ${entity} actualizado correctamente `,
-            data: updateRegistro
+        const [updatedCount] = await compraReportada.update(cambios, { where: { id } });
+        if (updatedCount === 0) {
+            return res.status(404).json({ message: `${entity} no encontrado o no se realizaron cambios` });
+        }
+
+        const updateRegistro = await compraReportada.findByPk(id, {
+            attributes: ['id', 'impreso', 'fechaImpresion']
         });
 
+        return res.status(200).json({
+            message: `${entity} actualizado correctamente`,
+            data: updateRegistro
+        });
     } catch (error) {
-        handleHttpError(res, `No se pudo actualizar ${entity} `)
-        console.error(error)
+        handleHttpError(res, `No se pudo actualizar ${entity} `);
+        console.error(error);
     }
 }
 
