@@ -1311,12 +1311,73 @@ const calcularDiferenciaDias = (fechaInicio, fechaFin) => {
 
 
 
+// Actualización mínima para marcar impresión
+const updateCompraImpresion = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { impreso, fechaImpresion, userMod } = req.body;
+
+        const cambios = {};
+
+        if (typeof impreso !== 'undefined') {
+            // Acepta booleanos y strings/num que representen booleano
+            const impresoBool = (impreso === true || impreso === 'true' || impreso === 1 || impreso === '1');
+            const impresoFalse = (impreso === false || impreso === 'false' || impreso === 0 || impreso === '0');
+            if (impresoBool) cambios.impreso = true;
+            else if (impresoFalse) cambios.impreso = false;
+        }
+
+        if (typeof fechaImpresion !== 'undefined' && fechaImpresion !== null && fechaImpresion !== '') {
+            const fecha = new Date(fechaImpresion);
+            if (!isNaN(fecha.getTime())) {
+                cambios.fechaImpresion = fecha;
+            }
+        }
+
+        if (typeof userMod !== 'undefined' && userMod !== null && userMod !== '') {
+            cambios.userMod = userMod;
+        }
+
+        // Reglas de consistencia
+        if (typeof cambios.impreso !== 'undefined') {
+            if (cambios.impreso === true && typeof cambios.fechaImpresion === 'undefined') {
+                cambios.fechaImpresion = new Date();
+            }
+            if (cambios.impreso === false && typeof req.body.fechaImpresion === 'undefined') {
+                cambios.fechaImpresion = null;
+            }
+        }
+
+        if (Object.keys(cambios).length === 0) {
+            return res.status(400).json({ message: 'No se enviaron campos válidos para actualizar' });
+        }
+
+        const [updated] = await compraReportada.update(cambios, { where: { id } });
+        if (updated === 0) {
+            return res.status(404).json({ message: `${entity} no encontrado` });
+        }
+
+        const registro = await compraReportada.findByPk(id, {
+            attributes: ['id', 'impreso', 'fechaImpresion', 'userMod']
+        });
+
+        return res.status(200).json({
+            message: 'Impresión actualizada correctamente',
+            data: registro
+        });
+    } catch (error) {
+        console.error(error);
+        handleHttpError(res, `No se pudo actualizar impresión de ${entity}`);
+    }
+};
+
 export {
     getComprasReportadas,
     getCompraReportadaJson,
     getCompraReportada,
     createCompraReportada,
     updateCompraReportada,
+    updateCompraImpresion,
     deleteCompraReportada,
     bulkUpsertComprasReportadas,
     conciliarCompras,

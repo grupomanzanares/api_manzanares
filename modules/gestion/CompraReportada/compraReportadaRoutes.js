@@ -1,7 +1,7 @@
 import express from 'express';
 import { apiAuth } from '../../../auth/middleware/apiauth.js';
-import { validateCreateCompraReportada, validateGetCompraReportada } from './compraReportadaValidator.js';
-import { createCompraReportada, deleteCompraReportada, getComprasReportadas, getCompraReportada, updateCompraReportada, bulkUpsertComprasReportadas, conciliarCompras, getComprasPorAutorizar, ejecutarEnvioCorreosProgramados, getMedicionesTiempo, getCentrosCostoPorResponsable, getResponsablesPorEmisor } from './compraReportadaController.js';
+import { validateCreateCompraReportada, validateGetCompraReportada, validateUpdateImpresion } from './compraReportadaValidator.js';
+import { createCompraReportada, deleteCompraReportada, getComprasReportadas, getCompraReportada, updateCompraReportada, bulkUpsertComprasReportadas, conciliarCompras, getComprasPorAutorizar, ejecutarEnvioCorreosProgramados, getMedicionesTiempo, getCentrosCostoPorResponsable, getResponsablesPorEmisor, updateCompraImpresion } from './compraReportadaController.js';
 import upload from '../../../middleware/uploadPdf.js';
 import uploadAdjAutorizador from '../../../middleware/uploadAdjAutorizador.js';
 
@@ -24,6 +24,14 @@ router.put(
     uploadAdjAutorizador.array('adjuntos', 10),  // Solo adjuntos, hasta 10 archivos
     validateGetCompraReportada,
     updateCompraReportada
+);
+
+// Ruta para marcar impresión (solo campos: impreso, fechaImpresion, userMod)
+router.put(
+    '/impresion/:id',
+    apiAuth,
+    validateUpdateImpresion,
+    updateCompraImpresion
 );
 
 // Ruta para actualización simple con solo PDF principal

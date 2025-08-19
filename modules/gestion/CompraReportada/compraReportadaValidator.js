@@ -61,5 +61,23 @@ const validateGetCompraReportada = [
 
 export {
     validateCreateCompraReportada,
-    validateGetCompraReportada
+    validateGetCompraReportada,
+    validateUpdateImpresion
 };
+
+// Validador mínimo para actualización de impresión
+const validateUpdateImpresion = [
+    check('id').exists().notEmpty(),
+    body('userMod').exists().notEmpty().isString(),
+    body('impreso').optional().isBoolean(),
+    body('fechaImpresion').optional().isISO8601(),
+    (req, res, next) => {
+        try {
+            validationResult(req).throw()
+            return next()
+        } catch (error) {
+            res.status('403')
+            res.send({ errors: error.array() })
+        }
+    }
+]
