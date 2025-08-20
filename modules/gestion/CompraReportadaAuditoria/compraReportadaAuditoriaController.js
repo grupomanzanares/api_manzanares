@@ -44,4 +44,32 @@ const createAuditoria = async (req, res) => {
 
 export { createAuditoria };
 
+const getAuditoriaByCompra = async (req, res) => {
+	try {
+		const reqData = matchedData(req);
+		const { compraReportadaId } = reqData;
+
+		// Verificar existencia de la compra
+		const existente = await compraReportada.findByPk(compraReportadaId);
+		if (!existente) {
+			return res.status(404).json({ message: 'compraReportada no encontrada' });
+		}
+
+		const auditoria = await compraReportadaAuditoria.findAll({
+			where: { compraReportadaId },
+			order: [['createdAt', 'ASC']]
+		});
+
+		return res.status(200).json({
+			success: true,
+			data: auditoria
+		});
+	} catch (error) {
+		console.error(error);
+		handleHttpError(res, `No se pudo consultar ${entity}`);
+	}
+};
+
+export { getAuditoriaByCompra };
+
 
