@@ -6,6 +6,10 @@ import { compraReportada } from "../gestionRelations.js";
 const entity = 'compraReportadaAuditoria';
 
 const createAuditoria = async (req, res) => {
+
+	console.log('Recibido en el servidor:');
+    console.log('Cuerpo de la solicitud:', req.body);
+	
 	try {
 		const body = matchedData(req);
 		const { compraReportadaId, evento, observacion, user } = body;
