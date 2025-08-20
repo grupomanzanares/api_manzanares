@@ -7,20 +7,20 @@ const compraReportadaAuditoria = db.define('compras_reportadas_auditoria', {
 		primaryKey: true,
 		autoIncrement: true
 	},
-
+	
 	compraReportadaId: {
 		type: DataTypes.INTEGER,
 		allowNull: false
 	},
 
 	evento: {
-		type: DataTypes.STRING(30),
+		type: DataTypes.STRING(50),
 		allowNull: false
 	},
 
 	observacion: {
 		type: DataTypes.STRING(500),
-		allowNull: true
+		allowNull: false
 	},
 
 	user: {

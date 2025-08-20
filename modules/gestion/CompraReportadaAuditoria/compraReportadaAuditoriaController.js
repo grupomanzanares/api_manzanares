@@ -25,7 +25,7 @@ const createAuditoria = async (req, res) => {
 			return res.status(404).json({ message: 'compraReportada no encontrada' });
 		}
 
-		// No restringir eventos: se confía en el valor enviado por el cliente
+		
 
 		const registro = await compraReportadaAuditoria.create({
 			compraReportadaId,

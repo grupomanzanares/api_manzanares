@@ -7,7 +7,7 @@ import upload from '../../../middleware/uploadPdf.js';
 const router = express.Router();
 
 // Aceptar multipart/form-data sin archivos
-router.post('/create', apiAuth, upload.none(), validateCreateAuditoria, createAuditoria);
+router.post('/create', apiAuth, validateCreateAuditoria, createAuditoria);
 router.get('/:compraReportadaId', apiAuth, validateGetAuditoria, getAuditoriaByCompra);
 
 export default router;
