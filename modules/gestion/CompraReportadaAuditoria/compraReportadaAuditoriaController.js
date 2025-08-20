@@ -12,7 +12,12 @@ const createAuditoria = async (req, res) => {
 	
 	try {
 		const body = matchedData(req);
-		const { compraReportadaId, evento, observacion, user } = body;
+		let { compraReportadaId, evento, observacion, user } = body;
+
+		// Normalizar evento (e.g., "Asignado" -> "asignado")
+		if (typeof evento === 'string') {
+			evento = evento.trim().toLowerCase();
+		}
 
 		// Verificar que exista la compra reportada
 		const existente = await compraReportada.findByPk(compraReportadaId);
@@ -20,14 +25,7 @@ const createAuditoria = async (req, res) => {
 			return res.status(404).json({ message: 'compraReportada no encontrada' });
 		}
 
-		// Eventos permitidos (flexible y ampliable)
-		const eventosPermitidos = [
-			'cargado', 'asignado', 'autorizado', 'rechazado', 'actualizado',
-			'contabilizado', 'tesoreria', 'impreso', 'conciliado', 'eliminado'
-		];
-		if (!eventosPermitidos.includes(evento)) {
-			return res.status(400).json({ message: `evento inválido. Permitidos: ${eventosPermitidos.join(', ')}` });
-		}
+		// No restringir eventos: se confía en el valor enviado por el cliente
 
 		const registro = await compraReportadaAuditoria.create({
 			compraReportadaId,
