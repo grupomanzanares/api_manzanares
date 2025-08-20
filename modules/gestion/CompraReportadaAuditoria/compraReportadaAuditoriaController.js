@@ -1,0 +1,47 @@
+import { matchedData } from "express-validator";
+import { handleHttpError } from "../../../helpers/httperror.js";
+import compraReportadaAuditoria from "./compraReportadaAuditoria.js";
+import { compraReportada } from "../gestionRelations.js";
+
+const entity = 'compraReportadaAuditoria';
+
+const createAuditoria = async (req, res) => {
+	try {
+		const body = matchedData(req);
+		const { compraReportadaId, evento, observacion, user } = body;
+
+		// Verificar que exista la compra reportada
+		const existente = await compraReportada.findByPk(compraReportadaId);
+		if (!existente) {
+			return res.status(404).json({ message: 'compraReportada no encontrada' });
+		}
+
+		// Eventos permitidos (flexible y ampliable)
+		const eventosPermitidos = [
+			'cargado', 'asignado', 'autorizado', 'rechazado', 'actualizado',
+			'contabilizado', 'tesoreria', 'impreso', 'conciliado', 'eliminado'
+		];
+		if (!eventosPermitidos.includes(evento)) {
+			return res.status(400).json({ message: `evento inválido. Permitidos: ${eventosPermitidos.join(', ')}` });
+		}
+
+		const registro = await compraReportadaAuditoria.create({
+			compraReportadaId,
+			evento,
+			observacion: observacion || null,
+			user
+		});
+
+		return res.status(201).json({
+			message: `${entity} creada correctamente`,
+			data: registro
+		});
+	} catch (error) {
+		console.error(error);
+		handleHttpError(res, `No se pudo crear ${entity}`);
+	}
+};
+
+export { createAuditoria };
+
+

@@ -4,6 +4,7 @@ import comprasTipo from "../maestras/ComprasTipo/comprasTipo.js";
 import empresa from "../maestras/Empresa/empresa.js";
 import matrizAutorizaciones from "./MatrizAutorizaciones/matrizAutorizaciones.js";
 import compraReportada from "./CompraReportada/compraReportada.js";
+import compraReportadaAuditoria from "./CompraReportadaAuditoria/compraReportadaAuditoria.js";
 
 
 // Relaciones para compraReportada
@@ -22,6 +23,10 @@ compraReportada.belongsTo(empresa, {
     as: 'empresaInfo'
 });
 
+// Relaciones para compras_reportadas_auditoria
+compraReportada.hasMany(compraReportadaAuditoria, { foreignKey: 'compraReportadaId', as: 'auditorias' });
+compraReportadaAuditoria.belongsTo(compraReportada, { foreignKey: 'compraReportadaId' });
+
 // Relaciones para matrizAutorizaciones
 User.hasMany(matrizAutorizaciones, { foreignKey: "responsableId" });
 matrizAutorizaciones.belongsTo(User, { foreignKey: "responsableId", as: "responsable" });
@@ -32,4 +37,4 @@ matrizAutorizaciones.belongsTo(empresa, {
     as: 'empresaInfo'
 });
 
-export { compraReportada, matrizAutorizaciones, empresa, User, comprasEstado, comprasTipo };
+export { compraReportada, compraReportadaAuditoria, matrizAutorizaciones, empresa, User, comprasEstado, comprasTipo };
