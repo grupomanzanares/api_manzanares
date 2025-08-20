@@ -27,6 +27,13 @@ compraReportada.belongsTo(empresa, {
 compraReportada.hasMany(compraReportadaAuditoria, { foreignKey: 'compraReportadaId', as: 'auditorias' });
 compraReportadaAuditoria.belongsTo(compraReportada, { foreignKey: 'compraReportadaId' });
 
+// Relación con User para auditoría
+compraReportadaAuditoria.belongsTo(User, { 
+    foreignKey: 'user', 
+    targetKey: 'identificacion',
+    as: 'usuario' 
+});
+
 // Relaciones para matrizAutorizaciones
 User.hasMany(matrizAutorizaciones, { foreignKey: "responsableId" });
 matrizAutorizaciones.belongsTo(User, { foreignKey: "responsableId", as: "responsable" });

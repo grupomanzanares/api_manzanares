@@ -1,7 +1,7 @@
 import { matchedData } from "express-validator";
 import { handleHttpError } from "../../../helpers/httperror.js";
 import compraReportadaAuditoria from "./compraReportadaAuditoria.js";
-import { compraReportada } from "../gestionRelations.js";
+import { compraReportada, User } from "../gestionRelations.js";
 
 const entity = 'compraReportadaAuditoria';
 
@@ -59,6 +59,15 @@ const getAuditoriaByCompra = async (req, res) => {
 
 		const auditoria = await compraReportadaAuditoria.findAll({
 			where: { compraReportadaId },
+			include: [
+				{
+					model: User,
+					as: 'usuario',
+					attributes: ['id', 'name', 'email'],
+					foreignKey: 'user',
+					sourceKey: 'identificacion'
+				}
+			],
 			order: [['createdAt', 'ASC']]
 		});
 
