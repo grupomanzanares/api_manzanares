@@ -758,7 +758,6 @@ const conciliarCompras = async (req, res) => {
             const compra = await compraReportada.findOne({
                 where: {
                     cufe: dian.cufe,
-                    numero: dian.numero,
                     emisor: dian.emisor,
                     habilitado: true,
                     conciliado: false
