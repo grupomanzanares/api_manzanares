@@ -69,6 +69,7 @@ Crear archivo de configuracion :   Carpeta config   -- archivo db.js,  configura
     npm i dotenv               //instalar para llamar las variables de entorno
     npm i express-validator    // Para realizar validaciones
     npm i bcrypt               // Para encriptar contraseñas
+    npm install bcryptjs
     npm install mysql2         // Para trabajar con Mysql
     npm install sequelize      // Para interactuar con la base de datos
 
@@ -92,4 +93,4 @@ Revisar variables de entorno
 EMAIL_HOST='mail.invercerro.com'
 EMAIL_PORT=465
 EMAIL_USERNAME='informatica@invercerro.com'
-EMAIL_PASSWORD='WAGfybMz03*'
+EMAIL_PASSWORD=''

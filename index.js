@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import db from "./config/db.js";
+import { db, dbComercial } from "./config/db.js";
 
 /***
  * Rutas ....  sandra v
@@ -24,6 +24,9 @@ import registroDianRoutes from './modules/gestion/RegistroDian/registroDianRoute
 import fileUploadRoutes from './modules/gestion/FileUpload/fileUploadRoutes.js';
 import compraReportadaDetalleRoutes from './modules/gestion/CompraReportadaDetalle/compraReportadaDetalleRoutes.js';
 
+/*** Rutas del módulo Comercial */
+import lotteryParticipationsRoutes from './modules/comercial/LotteryParticipations/lotteryParticipationsRoutes.js';
+
 /*** Crear app   */
 const app = express();
 
@@ -38,14 +41,23 @@ app.use(cors());
 app.use(express.json());
 
 
-/*** Conexión a la base de datos y eliminación de índices duplicados  */
-//Conexion a la base de datos
+/*** Conexión a las bases de datos */
+//Conexion a la base de datos Manzanares
 try {
     await db.authenticate();
     db.sync();
-    console.info('Conexion exitosa a la base de datos')
+    console.info('✅ Conexión exitosa a la base de datos Manzanares')
 } catch (error) {
-    console.log(error)
+    console.error('❌ Error conexión Manzanares:', error)
+}
+
+//Conexion a la base de datos Comercial
+try {
+    await dbComercial.authenticate();
+    dbComercial.sync();
+    console.info('✅ Conexión exitosa a la base de datos Comercial')
+} catch (error) {
+    console.error('❌ Error conexión Comercial:', error)
 }
 
 /*** Rutas Autenticacion */
@@ -68,6 +80,9 @@ app.use('/api_manzanares/registros_dian', registroDianRoutes);
 app.use('/api_manzanares/files', fileUploadRoutes);
 app.use('/api_manzanares/compras_reportadas_detalle', compraReportadaDetalleRoutes);
 
+/*** Rutas del módulo Comercial */
+app.use('/api_comercial/lottery-participations', lotteryParticipationsRoutes);
+
 // hola
 /***
  * Configurar puerto y levantar servidor
@@ -78,8 +93,16 @@ app.listen(port, () => {
 });
 
 /***
- * Ruta principal
+ * Rutas principales
  */
 app.get('/api_manzanares', (req, res) => {
     res.send("Hola api_manzanares te encuentras ON");
+});
+
+app.get('/api_comercial', (req, res) => {
+    res.json({
+        success: true,
+        message: "API Comercial funcionando correctamente",
+        version: "1.0.0"
+    });
 });
