@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { db, dbComercial } from "./config/db.js";
+import db from "./config/db.js";
 
 /***
  * Rutas ....  sandra v
@@ -24,8 +24,6 @@ import registroDianRoutes from './modules/gestion/RegistroDian/registroDianRoute
 import fileUploadRoutes from './modules/gestion/FileUpload/fileUploadRoutes.js';
 import compraReportadaDetalleRoutes from './modules/gestion/CompraReportadaDetalle/compraReportadaDetalleRoutes.js';
 
-/*** Rutas del módulo Comercial */
-import lotteryParticipationsRoutes from './modules/comercial/LotteryParticipations/lotteryParticipationsRoutes.js';
 
 /*** Crear app   */
 const app = express();
@@ -41,31 +39,18 @@ app.use(cors());
 app.use(express.json());
 
 
-// Variable para controlar si la DB comercial está disponible
-let comercialDbAvailable = false;
-
 
 /*** Conexión a las bases de datos */
 //Conexion a la base de datos Manzanares
 try {
     await db.authenticate();
-    await db.sync();
+    db.sync();
     console.info('✅ Conexión exitosa a la base de datos Manzanares')
 } catch (error) {
     console.error('❌ Error conexión Manzanares:', error)
 }
 
-//Conexion a la base de datos Comercial
-try {
-    await dbComercial.authenticate();
-    await dbComercial.sync();
-    console.info('✅ Conexión exitosa a la base de datos Comercial')
-    comercialDbAvailable = true;
-} catch (error) {
-    console.warn('⚠️  Advertencia - No se pudo conectar a la base de datos Comercial:', error.message);
-    console.warn('⚠️  El módulo comercial estará deshabilitado');
-    comercialDbAvailable = false;
-}
+
 
 /*** Rutas Autenticacion */
 app.use('/api_manzanares/users', userRoutes);
@@ -87,8 +72,6 @@ app.use('/api_manzanares/registros_dian', registroDianRoutes);
 app.use('/api_manzanares/files', fileUploadRoutes);
 app.use('/api_manzanares/compras_reportadas_detalle', compraReportadaDetalleRoutes);
 
-/*** Rutas del módulo Comercial */
-app.use('/api_comercial/lottery-participations', lotteryParticipationsRoutes);
 
 // hola
 /***
@@ -104,12 +87,4 @@ app.listen(port, () => {
  */
 app.get('/api_manzanares', (req, res) => {
     res.send("Hola api_manzanares te encuentras ON");
-});
-
-app.get('/api_comercial', (req, res) => {
-    res.json({
-        success: true,
-        message: "API Comercial funcionando correctamente",
-        version: "1.0.0"
-    });
 });
