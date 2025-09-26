@@ -61,6 +61,7 @@ Tener presente trabajar con git
             Instalar framework :              npm i express	 --save       Crea el package-lock.json y la carpeta node_modules   4.19.2
 
 3. Dependencias de Desarrollo
+npm install --save-dev nodemon
 Dependencia Nodemon                 https://github.com/grupomanzanares/api_coffee.git	    dependencia de desarrollo que sirve para mantener levantado el servidor  3.1.3
                                                               "server": "nodemon ./index.js"   en scripts   npm run server
 
@@ -94,3 +95,6 @@ EMAIL_HOST='mail.invercerro.com'
 EMAIL_PORT=465
 EMAIL_USERNAME='informatica@invercerro.com'
 EMAIL_PASSWORD=''
+
+
+Instalar cors npm install cors
