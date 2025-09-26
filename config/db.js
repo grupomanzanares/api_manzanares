@@ -1,26 +1,47 @@
 import { Sequelize } from "sequelize";
-import dotenv from "dotenv";  //importar modulo dotenv para llamar las variables de entorno
+import dotenv from "dotenv";
 
 dotenv.config({ path: '.env' });
 
-// Configuraciones independientes por conexión (permiten diferentes hosts/puertos/credenciales)
+// DEBUG: Mostrar variables de entorno
+console.log('🔍 DEBUG - Variables de DB Comercial:');
+console.log('   DB_COMERCIAL_DATABASE:', process.env.DB_COMERCIAL_DATABASE);
+console.log('   DB_COMERCIAL_SERVER:', process.env.DB_COMERCIAL_SERVER || process.env.DB_SERVER);
+console.log('   DB_COMERCIAL_PORT:', process.env.DB_COMERCIAL_PORT || process.env.DB_PORT);
+console.log('   DB_COMERCIAL_USER:', process.env.DB_COMERCIAL_USER || process.env.DB_USER);
+
 const manzanaresConfig = {
     host: process.env.DB_SERVER,
     dialect: 'mysql',
     port: Number(process.env.DB_PORT) || 3306,
-    define: { timestamps: true },
-    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 }
+    database: process.env.DB_DATABASE,
+    define: {
+        timestamps: true,
+        schema: process.env.DB_DATABASE
+    },
+    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
+    dialectOptions: {
+        multipleStatements: true
+    },
+    logging: false // Deshabilitar logs SQL en producción
 };
 
 const comercialConfig = {
     host: process.env.DB_COMERCIAL_SERVER || process.env.DB_SERVER,
     dialect: 'mysql',
     port: Number(process.env.DB_COMERCIAL_PORT || process.env.DB_PORT) || 3306,
-    define: { timestamps: true },
-    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 }
+    database: process.env.DB_COMERCIAL_DATABASE,
+    define: {
+        timestamps: true,
+        schema: process.env.DB_COMERCIAL_DATABASE
+    },
+    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
+    dialectOptions: {
+        multipleStatements: true
+    },
+    logging: false
 };
 
-// Conexión a base de datos Manzanares (principal)
 const db = new Sequelize(
     process.env.DB_DATABASE,
     process.env.DB_USER,
@@ -28,7 +49,6 @@ const db = new Sequelize(
     manzanaresConfig
 );
 
-// Conexión a base de datos Comercial
 const dbComercial = new Sequelize(
     process.env.DB_COMERCIAL_DATABASE,
     process.env.DB_COMERCIAL_USER || process.env.DB_USER,
@@ -36,9 +56,5 @@ const dbComercial = new Sequelize(
     comercialConfig
 );
 
-// Exportar ambas conexiones sin autenticar aquí (la app las autentica)
 export { db, dbComercial };
-export default db; // Mantener compatibilidad con código existente
-
-// acquire:30000   30 segundos de espera para conectarse a la base de datos
-// idle:10000     tiempo que debe pasar para que cierre la conexion si no hay movimientos en la base de datos
+export default db;
