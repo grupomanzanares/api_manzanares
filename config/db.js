@@ -1,7 +1,17 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";  //importar modulo dotenv para llamar las variables de entorno
 
+
 dotenv.config({ path: '.env' });
+
+
+// DEBUG: Mostrar variables de entorno
+console.log('🔍 DEBUG - Variables de DB Comercial:');
+console.log('   DB_COMERCIAL_DATABASE:', process.env.DB_COMERCIAL_DATABASE);
+console.log('   DB_COMERCIAL_SERVER:', process.env.DB_COMERCIAL_SERVER || process.env.DB_SERVER);
+console.log('   DB_COMERCIAL_PORT:', process.env.DB_COMERCIAL_PORT || process.env.DB_PORT);
+console.log('   DB_COMERCIAL_USER:', process.env.DB_COMERCIAL_USER || process.env.DB_USER);
+
 
 // Configuraciones independientes por conexión (permiten diferentes hosts/puertos/credenciales)
 const manzanaresConfig = {

@@ -41,11 +41,15 @@ app.use(cors());
 app.use(express.json());
 
 
+// Variable para controlar si la DB comercial está disponible
+let comercialDbAvailable = false;
+
+
 /*** Conexión a las bases de datos */
 //Conexion a la base de datos Manzanares
 try {
     await db.authenticate();
-    db.sync();
+    await db.sync();
     console.info('✅ Conexión exitosa a la base de datos Manzanares')
 } catch (error) {
     console.error('❌ Error conexión Manzanares:', error)
@@ -54,16 +58,19 @@ try {
 //Conexion a la base de datos Comercial
 try {
     await dbComercial.authenticate();
-    dbComercial.sync();
+    await dbComercial.sync();
     console.info('✅ Conexión exitosa a la base de datos Comercial')
+    comercialDbAvailable = true;
 } catch (error) {
-    console.error('❌ Error conexión Comercial:', error)
+    console.warn('⚠️  Advertencia - No se pudo conectar a la base de datos Comercial:', error.message);
+    console.warn('⚠️  El módulo comercial estará deshabilitado');
+    comercialDbAvailable = false;
 }
 
 /*** Rutas Autenticacion */
 app.use('/api_manzanares/users', userRoutes);
 app.use('/api_manzanares/auth', authRoutes);
-app.use('/api_manzanares/roles', rolRoutes);
+
 
 
 /***  Rutas del sistema */
